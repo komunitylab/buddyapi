@@ -5,7 +5,9 @@
   "scripts": {
     "start": "node ./bin/www",
     "lint": "eslint .",
-    "init-db-standalone": "node ./bin/init-database-standalone.js"
+    "init-db-standalone": "node ./bin/init-database-standalone.js",
+    "test": "NODE_ENV=test mocha ./test/ --watch",
+    "test-once": "NODE_ENV=test mocha ./test/"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
@@ -15,6 +17,10 @@
     "prompt": "^1.0.0"
   },
   "devDependencies": {
-    "eslint": "^4.11.0"
+    "eslint": "^4.11.0",
+    "mocha": "^4.0.1",
+    "should": "^13.1.3",
+    "superagent-defaults": "^0.1.14",
+    "supertest": "^3.0.0"
   }
 }

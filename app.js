@@ -10,6 +10,12 @@ const app = express();
 app.use(logger('dev'));
 app.use(bodyParser.json());
 
+// set content type to jsonapi
+app.use((req, res, next) => {
+  res.contentType('application/vnd.api+json');
+  next();
+});
+
 app.use('/', index);
 app.use('/users', users);
 

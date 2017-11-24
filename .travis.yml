@@ -12,4 +12,4 @@ before_script:
   - NODE_ENV=test npm run init-db-standalone
 script:
   - npm run lint
-  #- npm run test-once
+  - npm run test-once
