@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "init-db-standalone": "node ./bin/init-database-standalone.js"
   },
   "dependencies": {
     "body-parser": "~1.18.2",

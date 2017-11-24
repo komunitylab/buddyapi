@@ -1,15 +1,7 @@
 'use strict';
 
-const env = process.env.NODE_ENV;
-
-if (!env || !['development', 'production', 'test'].includes(env)) {
-  throw new Error('you need to specify environment, i.e. NODE_ENV=development [command]\nallowed environments: development, production, test');
-}
-
 const mysql = require('mysql2/promise'),
-      path = require('path'),
-      prompt = require('prompt'),
-      { promisify } = require('util');
+      path = require('path');
 
 const tables = require(path.resolve('./model/dbTables')),
       config = require(path.resolve('./config'));
@@ -21,21 +13,9 @@ const { host, user, dbname, password } = config.database;
   let connection;
 
   try {
-    // ask for mysql root username and password
-    const schema = { properties: {
-      admin: {
-        description: 'mysql root user',
-        default: 'root'
-      },
-      adminPwd: {
-        description: 'password',
-        hidden: true
-      }
-    } };
-
-    prompt.start();
-
-    const { admin, adminPwd } = await (promisify(prompt.get))(schema);
+    // credentials for travis-ci
+    const admin = 'root';
+    const adminPwd = '';
 
     // connection with root user
     // or user with enough privileges to create users, databases, tables, ...)
@@ -61,36 +41,12 @@ const { host, user, dbname, password } = config.database;
 }());
 
 /**
- * Create database. If database already exists, ask whether to rewrite.
+ * Create database
  * @param {string} dbname - name of the database to create
  * @param {object} connection - mysql2/promise connection object
  */
 async function createDatabase(dbname, connection) {
-  try {
-    await connection.query(`CREATE DATABASE ${dbname}`);
-  } catch (e) {
-    // drop if already exists (and ask for confirmation)
-    if (e.code === 'ER_DB_CREATE_EXISTS') {
-      const schema = { properties: {
-        drop: {
-          description: `database ${dbname} already exists. drop it? (y/N)`,
-          default: 'n'
-        }
-      } };
-
-      const { drop } = await (promisify(prompt.get))(schema);
-
-      if (drop === 'y') {
-        await connection.execute(`DROP DATABASE ${dbname}`);
-        await connection.execute(`CREATE DATABASE ${dbname}`);
-        return;
-      } else {
-        throw('aborted');
-      }
-    }
-
-    throw e;
-  }
+  await connection.query(`CREATE DATABASE ${dbname}`);
 }
 
 /**
@@ -101,10 +57,7 @@ async function createDatabase(dbname, connection) {
  * @param {object} connection - mysql2/promise connection object
  */
 async function createUser(username, password, dbname, connection) {
-  // drop user if exists
-  await connection.query('DROP USER IF EXISTS ?@?', [username, host]);
-
-  // (re)create user and grant privileges
+  // create user and grant privileges
   await connection.query(`GRANT INSERT, SELECT, UPDATE, DELETE ON ${dbname}.* TO ?@? IDENTIFIED BY ?`, [host, username, password]);
   await connection.query('FLUSH PRIVILEGES');
 }
