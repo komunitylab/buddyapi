@@ -2,8 +2,8 @@
 
 module.exports = {
   database: {
-    host: '127.0.0.1',
-    dbname: 'buddy_test',
+    host: 'localhost',
+    database: 'buddy_test',
     user: 'buddy_test'
   }
 };

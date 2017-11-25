@@ -15,7 +15,7 @@ const tables = require(path.resolve('./model/dbTables')),
       config = require(path.resolve('./config'));
 
 // database configuration
-const { host, user, dbname, password } = config.database;
+const { host, user, database: dbname, password } = config.database;
 
 (async function main() {
   let connection;
@@ -105,7 +105,7 @@ async function createUser(username, password, dbname, connection) {
   await connection.query('DROP USER IF EXISTS ?@?', [username, host]);
 
   // (re)create user and grant privileges
-  await connection.query(`GRANT INSERT, SELECT, UPDATE, DELETE ON ${dbname}.* TO ?@? IDENTIFIED BY ?`, [host, username, password]);
+  await connection.query(`GRANT INSERT, SELECT, UPDATE, DELETE ON ${dbname}.* TO ?@? IDENTIFIED BY ?`, [username, host, password]);
   await connection.query('FLUSH PRIVILEGES');
 }
 

@@ -21,24 +21,24 @@ module.exports = [
       admin: 'BOOLEAN DEFAULT FALSE',
       activated: 'BOOLEAN DEFAULT FALSE', // if buddy, can contact comers (admin sets this)
       available: 'BOOLEAN DEFAULT FALSE', // is buddy or comer looking for match?
-      password_hash: 'CHAR(32)', // hashed password
-      password_salt: 'CHAR(32)',
+      password_hash: 'CHAR(88)', // hashed password
+      password_salt: 'CHAR(88)',
       password_iterations: 'MEDIUMINT UNSIGNED',
       given_name: 'VARCHAR(64)', // profile
       family_name: 'VARCHAR(64)', // profile
       gender: 'ENUM(\'male\', \'female\', \'other\')', // profile
-      birthday: 'DATE', // profile (display only age)
+      birthday: 'CHAR(10)', // profile (display only age)
       about: 'MEDIUMTEXT', // profile
       temporary_email: 'varchar(128)',
-      te_hash: 'CHAR(32)', // hashed email verification code
-      te_salt: 'CHAR(32)',
+      te_hash: 'CHAR(88)', // hashed email verification code
+      te_salt: 'CHAR(88)',
       te_iterations: 'MEDIUMINT UNSIGNED',
-      te_expire: 'DATETIME', // when verification code expires
-      pass_reset_hash: 'CHAR(32)',
-      pass_reset_salt: 'CHAR(32)',
+      te_expire: 'BIGINT UNSIGNED', // when verification code expires
+      pass_reset_hash: 'CHAR(88)',
+      pass_reset_salt: 'CHAR(88)',
       pass_reset_iterations: 'MEDIUMINT UNSIGNED',
-      pass_reset_expire: 'DATETIME',
-      created: 'DATETIME DEFAULT CURRENT_TIMESTAMP'
+      pass_reset_expire: 'BIGINT UNSIGNED',
+      created: 'BIGINT UNSIGNED'
     },
     keys: {
       primary: 'id'

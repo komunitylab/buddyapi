@@ -2,13 +2,13 @@ const express = require('express'),
       logger = require('morgan'),
       bodyParser = require('body-parser');
 
-const index = require('./routes/index'),
-      users = require('./routes/users');
+const users = require('./routes/users'),
+      deserialize = require('./controllers/deserialize');
 
 const app = express();
 
 app.use(logger('dev'));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 
 // set content type to jsonapi
 app.use((req, res, next) => {
@@ -16,7 +16,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/', index);
+app.use(deserialize);
+
 app.use('/users', users);
 
 // catch 404 and forward to error handler
@@ -30,6 +31,9 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
   // set locals, only providing error in development
   res.locals.message = err.message;
+
+  console.error(err); // eslint-disable-line no-console
+
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
