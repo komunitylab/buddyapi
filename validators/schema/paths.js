@@ -1,0 +1,14 @@
+'use strict';
+
+const user = {
+  username: { $ref: 'sch#/definitions/user/username' },
+  email: { $ref: 'sch#/definitions/user/email' },
+  password: { $ref: 'sch#/definitions/user/password' },
+  role: { $ref: 'sch#/definitions/user/role' },
+  givenName: { $ref: 'sch#/definitions/user/givenName' },
+  familyName: { $ref: 'sch#/definitions/user/familyName' },
+  birthday: { $ref: 'sch#/definitions/user/birthday' },
+  gender: { $ref: 'sch#/definitions/user/gender' },
+};
+
+module.exports = { user };

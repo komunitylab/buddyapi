@@ -16,15 +16,26 @@ async function create({ username, email, role, givenName, familyName, gender, bi
   const query = `INSERT INTO user
     (username, temporary_email, role, given_name, family_name, gender, birthday,
       password_hash, password_salt, password_iterations,
-      created
-    )
+      created)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   const params = [
     username, email, role, givenName, familyName, gender, birthday,
     hash, salt, iterations,
     created
   ];
-  await pool.execute(query, params);
+
+  try {
+    await pool.execute(query, params);
+  } catch (e) {
+    switch (e.errno) {
+      case 1062: {
+        e.status = 409;
+        break;
+      }
+    }
+
+    throw e;
+  }
 }
 
 async function read(username) {

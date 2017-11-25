@@ -2,6 +2,7 @@ const express = require('express'),
       path = require('path');
 
 const controllers = require(path.resolve('./controllers'));
+const validators = require(path.resolve('./validators'));
 
 const router = express.Router();
 
@@ -15,6 +16,6 @@ router.get('/', function(req, res) {
  */
 
 router.route('/')
-  .post(controllers.users.create);
+  .post(validators.users.post, controllers.users.create);
 
 module.exports = router;

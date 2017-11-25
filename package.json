@@ -11,11 +11,11 @@
     "test-once": "NODE_ENV=test mocha ./test/"
   },
   "dependencies": {
+    "ajv": "^5.5.0",
     "body-parser": "~1.18.2",
     "camelize": "^1.0.0",
     "express": "~4.15.5",
     "jsonapi-serializer": "^3.5.5",
-    "morgan": "~1.9.0",
     "mysql2": "^1.5.1",
     "prompt": "^1.0.0"
   },

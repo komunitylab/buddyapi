@@ -1,5 +1,4 @@
 const express = require('express'),
-      logger = require('morgan'),
       bodyParser = require('body-parser');
 
 const users = require('./routes/users'),
@@ -7,7 +6,6 @@ const users = require('./routes/users'),
 
 const app = express();
 
-app.use(logger('dev'));
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 
 // set content type to jsonapi
@@ -27,7 +25,11 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-// error handler
+// error handlers
+
+// validation error handler
+app.use(require('./validators/errorHandler'));
+
 app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
   // set locals, only providing error in development
   res.locals.message = err.message;
