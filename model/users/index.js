@@ -11,16 +11,26 @@ async function create({ username, email, role, givenName, familyName, gender, bi
 
   const { hash, salt, iterations } = await account.hash(password);
 
+  const verifyEmailCode = await account.generateHexCode(32);
+
+  const { hash: teHash, salt: teSalt, iterations: teIterations } = await account.hash(verifyEmailCode);
+
+
   const created = Date.now();
 
   const query = `INSERT INTO user
     (username, temporary_email, role, given_name, family_name, gender, birthday,
       password_hash, password_salt, password_iterations,
+      te_hash, te_salt, te_iterations, te_expire,
       created)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?,
+      ?, ?, ?, ?,
+      ?)`;
   const params = [
     username, email, role, givenName, familyName, gender, birthday,
     hash, salt, iterations,
+    teHash, teSalt, teIterations, Date.now(),
     created
   ];
 
@@ -36,6 +46,8 @@ async function create({ username, email, role, givenName, familyName, gender, bi
 
     throw e;
   }
+
+  return verifyEmailCode;
 }
 
 async function read(username) {

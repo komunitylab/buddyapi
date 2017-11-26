@@ -10,11 +10,11 @@ module.exports = function (err, req, res, next) {
       // remapping errors from json-schema (ajv) validation (and TODO make it a default when validation is fully refactored)
       if (e.hasOwnProperty('dataPath')) { // is this an ajv json-schema error?
         if (e.keyword === 'additionalProperties') { // invalid attributes are failing additionalProperties: false
-          e.param = 'attributes';
-          e.msg = 'unexpected attribute';
+          e.param = 'property';
+          e.msg = 'unexpected property';
         } else if (e.keyword === 'required') { // missing attributes are missing fields from required: ['required', 'fields']
-          e.param = 'attributes';
-          e.msg = 'missing attribute';
+          e.param = 'properties';
+          e.msg = `missing property ${e.params.missingProperty }`;
         } else { // otherwise we use the last part of failing dataPath to name the error.
           const dataPath = e.dataPath.split('.');
           const param = dataPath[dataPath.length - 1];

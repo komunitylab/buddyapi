@@ -1,14 +1,30 @@
-const path = require('path'),
+'use strict';
+
+const MailDev = require('maildev'),
+      path = require('path'),
       should = require('should'),
-      sinon = require('sinon');
+      sinon = require('sinon'),
+      { promisify } = require('util');
 
 const agentFactory = require('./agent'),
       db = require('./db'),
-      userModel = require(path.resolve('./model/users'));
+      userModel = require(path.resolve('./model/users')),
+      mailer = require(path.resolve('./services/mailer'));
 
 describe('/users', () => {
   let agent,
+      maildev,
       sandbox;
+
+  // start and stop maildev for the tests
+  before(async () => {
+    maildev = new MailDev();
+    await (promisify(maildev.listen)());
+  });
+
+  after(async () => {
+    await (promisify(maildev.close)());
+  });
 
   beforeEach(() => {
     agent = agentFactory();
@@ -18,6 +34,7 @@ describe('/users', () => {
       now: Date.now(),
       toFake: ['Date']
     });
+    sandbox.spy(mailer, 'general');
   });
 
   afterEach(() => {
@@ -70,6 +87,25 @@ describe('/users', () => {
           gender: 'female',
           created: Date.now()
         });
+      });
+
+      it('send verification email', async () => {
+
+        await agent
+          .post('/users')
+          .send(requestBody)
+          .expect(201);
+
+        sinon.assert.calledOnce(mailer.general);
+        const message = mailer.general.getCall(0).args[0];
+
+        should(message).containDeep({
+          to: '<email@example.com>',
+          subject: 'Email verification for Buddy Brno'
+        });
+
+        should(message).have.property('text').match(/[\da-f]{32}/);
+        should(message).have.property('html').match(/[\da-f]{32}/);
       });
     });
 
