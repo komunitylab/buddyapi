@@ -1,8 +1,11 @@
 'use strict';
 
-const camelize = require('camelize');
+const camelize = require('camelize'),
+      _ = require('lodash'),
+      path = require('path');
 const pool = require('../db'),
-      account = require('./account');
+      account = require('./account'),
+      config = require(path.resolve('./config'));
 
 /**
  * Save a new user into database
@@ -14,7 +17,6 @@ async function create({ username, email, role, givenName, familyName, gender, bi
   const verifyEmailCode = await account.generateHexCode(32);
 
   const { hash: teHash, salt: teSalt, iterations: teIterations } = await account.hash(verifyEmailCode);
-
 
   const created = Date.now();
 
@@ -30,7 +32,7 @@ async function create({ username, email, role, givenName, familyName, gender, bi
   const params = [
     username, email, role, givenName, familyName, gender, birthday,
     hash, salt, iterations,
-    teHash, teSalt, teIterations, Date.now(),
+    teHash, teSalt, teIterations, created + config.emailVerificationCodeExpire,
     created
   ];
 
@@ -50,8 +52,9 @@ async function create({ username, email, role, givenName, familyName, gender, bi
   return verifyEmailCode;
 }
 
-async function read(username) {
-  const query = 'SELECT * FROM user WHERE username = ?';
+async function read(username, fields = ['username']) {
+  const snakeFields = fields.map(field => _.snakeCase(field));
+  const query = `SELECT ${snakeFields.join(', ')} FROM user WHERE username = ?`;
   const params = [username];
 
   const [rows] = await pool.execute(query, params);
@@ -66,4 +69,44 @@ async function read(username) {
   }
 }
 
-module.exports = { create, read };
+async function verifyEmail(username, code) {
+  // read the temporary email data
+  const {
+    temporaryEmail,
+    teHash: hash,
+    teSalt: salt,
+    teIterations: iterations,
+    teExpire: expiration
+  } = await read(username, ['temporaryEmail', 'teHash', 'teSalt', 'teIterations', 'teExpire']);
+
+  if (temporaryEmail === null) {
+    throw new Error('email already verified');
+  }
+
+  // verify that code is not expired
+  const isExpired = Date.now() > expiration;
+  if (isExpired) {
+    throw new Error('expired code');
+  }
+
+  // verify that code is correct
+  const isCorrect = await account.compare(code, { hash, salt, iterations });
+  if (!isCorrect) {
+    throw new Error('wrong code');
+  }
+
+  // update the email and clear the email verification data
+  const query = `UPDATE user
+    SET email = ?,
+        temporary_email = NULL,
+        te_hash = NULL,
+        te_salt = NULL,
+        te_iterations = NULL,
+        te_expire = NULL
+    WHERE user.username = ?`;
+  const params = [temporaryEmail, username];
+
+  await pool.execute(query, params);
+}
+
+module.exports = { create, read, verifyEmail };

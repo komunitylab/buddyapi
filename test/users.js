@@ -1,30 +1,27 @@
 'use strict';
 
-const MailDev = require('maildev'),
-      path = require('path'),
+const path = require('path'),
       should = require('should'),
-      sinon = require('sinon'),
-      { promisify } = require('util');
+      sinon = require('sinon');
 
 const agentFactory = require('./agent'),
-      db = require('./db'),
       userModel = require(path.resolve('./model/users')),
       mailer = require(path.resolve('./services/mailer'));
 
 describe('/users', () => {
   let agent,
-      maildev,
       sandbox;
 
   // start and stop maildev for the tests
+  /*
   before(async () => {
-    maildev = new MailDev();
     await (promisify(maildev.listen)());
   });
 
   after(async () => {
     await (promisify(maildev.close)());
   });
+  */
 
   beforeEach(() => {
     agent = agentFactory();
@@ -34,15 +31,12 @@ describe('/users', () => {
       now: Date.now(),
       toFake: ['Date']
     });
-    sandbox.spy(mailer, 'general');
+    // sandbox.spy(mailer, 'general');
+    sandbox.stub(mailer, 'general');
   });
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  afterEach(async () => {
-    await db.clear();
   });
 
   describe('POST', () => {
@@ -76,7 +70,7 @@ describe('/users', () => {
           .expect(201);
 
         // check that user was saved to database
-        const user = await userModel.read('testuser');
+        const user = await userModel.read('testuser', ['username', 'temporaryEmail', 'role', 'givenName', 'familyName', 'birthday', 'gender', 'created']);
         should(user).containDeep({
           username: 'testuser',
           temporaryEmail: 'email@example.com',
@@ -106,6 +100,23 @@ describe('/users', () => {
 
         should(message).have.property('text').match(/[\da-f]{32}/);
         should(message).have.property('html').match(/[\da-f]{32}/);
+      });
+
+      it('create more than 1 user', async () => {
+        await agent
+          .post('/users')
+          .send(requestBody)
+          .expect('content-type', /^application\/vnd\.api\+json/)
+          .expect(201);
+
+        requestBody.data.attributes.username = 'another-test';
+        requestBody.data.attributes.email = 'anotherEmail@example.com';
+
+        await agent
+          .post('/users')
+          .send(requestBody)
+          .expect('content-type', /^application\/vnd\.api\+json/)
+          .expect(201);
       });
     });
 

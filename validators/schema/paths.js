@@ -11,4 +11,8 @@ const user = {
   gender: { $ref: 'sch#/definitions/user/gender' },
 };
 
-module.exports = { user };
+const account = {
+  code: { $ref: 'sch#/definitions/account/code' },
+};
+
+module.exports = { account, user };

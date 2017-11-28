@@ -12,6 +12,6 @@ const router = express.Router();
  * Create a new user
  */
 router.route('/')
-  .post(validators.users.post, controllers.users.create);
+  .patch(validators.account.verifyEmail, controllers.account.verifyEmail);
 
 module.exports = router;

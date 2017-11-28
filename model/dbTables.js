@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * table definitions - array of objects with:
  * - table name: name: 'table_name'

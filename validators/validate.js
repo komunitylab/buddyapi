@@ -1,3 +1,5 @@
+'use strict';
+
 const _ = require('lodash'),
       Ajv = require('ajv'),
       schema = require('./schema');

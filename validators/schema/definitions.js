@@ -1,3 +1,5 @@
+'use strict';
+
 const user = {
   username: {
     type: 'string',
@@ -41,4 +43,13 @@ const user = {
   }
 };
 
-module.exports = { user };
+const account = {
+  code: {
+    type: 'string',
+    minLength: 32,
+    maxLength: 32,
+    pattern: '^[\\da-f]*$'
+  }
+};
+
+module.exports = { account, user };

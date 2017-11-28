@@ -1,7 +1,10 @@
+'use strict';
+
 const express = require('express'),
       bodyParser = require('body-parser');
 
 const users = require('./routes/users'),
+      account = require('./routes/account'),
       deserialize = require('./controllers/deserialize');
 
 const app = express();
@@ -17,6 +20,7 @@ app.use((req, res, next) => {
 app.use(deserialize);
 
 app.use('/users', users);
+app.use('/account', account);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

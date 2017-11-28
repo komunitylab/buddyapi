@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * @param {Array} err - err should be an array of error objects ready to display
  */
