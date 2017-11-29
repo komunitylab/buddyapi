@@ -5,6 +5,7 @@ const express = require('express'),
 
 const account = require('./routes/account'),
       auth = require('./routes/auth'),
+      authenticate = require('./controllers/authenticate'),
       users = require('./routes/users'),
       deserialize = require('./controllers/deserialize');
 
@@ -19,6 +20,8 @@ app.use((req, res, next) => {
 });
 
 app.use(deserialize);
+
+app.use(authenticate);
 
 app.use('/account', account);
 app.use('/auth', auth);

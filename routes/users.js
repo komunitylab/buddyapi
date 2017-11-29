@@ -16,6 +16,6 @@ router.route('/')
 
 router.route('/:username')
   // set buddy to active or inactive
-  .patch(validators.users.patchActive, controllers.users.patchActive);
+  .patch(controllers.authorize.onlyAdmin, validators.users.patchActive, controllers.users.patchActive);
 
 module.exports = router;

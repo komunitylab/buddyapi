@@ -1,17 +1,32 @@
 'use strict';
 
 const path = require('path'),
-      should = require('should');
+      should = require('should'),
+      sinon = require('sinon');
 
 const agentFactory = require('./agent'),
       db = require('./db'),
       model = require(path.resolve('./model'));
 
 describe('admin', () => {
-  let agent;
+  let agent,
+      sandbox;
 
   beforeEach(() => {
     agent = agentFactory();
+  });
+
+  beforeEach(() => {
+    sandbox = sinon.sandbox.create();
+
+    sandbox.useFakeTimers({
+      toFake: ['Date'],
+      now: 1500000000000
+    });
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   describe('activate/desactivate buddy', () => {
@@ -34,11 +49,9 @@ describe('admin', () => {
     });
 
     context('admin', () => {
-      /*
       beforeEach(() => {
         agent = agentFactory.logged({ admin: true });
       });
-      */
 
       context('valid data', () => {
 
@@ -239,7 +252,24 @@ describe('admin', () => {
     });
 
     context('not admin', () => {
-      it('403');
+      beforeEach(() => {
+        agent = agentFactory.logged();
+      });
+
+      it('403', async () => {
+        await agent
+          .patch(`/users/${inactiveBuddy.username}`)
+          .send({
+            data: {
+              type: 'users',
+              id: inactiveBuddy.username,
+              attributes: {
+                active: true
+              }
+            }
+          })
+          .expect(403);
+      });
     });
   });
 });

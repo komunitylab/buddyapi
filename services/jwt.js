@@ -28,10 +28,13 @@ async function generate(user, isAdmin = false) {
 /**
  * provide Bearer header + jwt token, return authentication data or throw error
  */
-/* TODO
-async function authenticate(/token) {
+async function authenticate(authHeader) {
+  const [type, token] = authHeader.split(' ');
+  if (type !== 'Bearer') {
+    throw new Error('invalid authorization method');
+  }
 
+  return await jwt.verify(token, config.jwt.secret);
 }
-*/
 
-module.exports = { generate/* , authenticate*/ };
+module.exports = { generate , authenticate };
