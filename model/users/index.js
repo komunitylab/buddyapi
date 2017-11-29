@@ -4,7 +4,7 @@ const camelize = require('camelize'),
       _ = require('lodash'),
       path = require('path');
 const pool = require('../db'),
-      account = require('./account'),
+      account = require(path.resolve('./services/account')),
       config = require(path.resolve('./config'));
 
 /**
@@ -96,17 +96,31 @@ async function verifyEmail(username, code) {
   }
 
   // update the email and clear the email verification data
+  try {
+    await _finalVerifyEmail(username);
+  } catch (e) {
+    if (e.errno === 1062) { // duplicate entry (of email probably)
+      e.status = 409; // set status to conflict
+    }
+    throw e;
+  }
+}
+
+// outside used only in tests
+async function _finalVerifyEmail(username) {
+  // update the email and clear the email verification data
   const query = `UPDATE user
-    SET email = ?,
+    SET email = temporary_email,
         temporary_email = NULL,
         te_hash = NULL,
         te_salt = NULL,
         te_iterations = NULL,
         te_expire = NULL
     WHERE user.username = ?`;
-  const params = [temporaryEmail, username];
+  const params = [username];
 
   await pool.execute(query, params);
+
 }
 
-module.exports = { create, read, verifyEmail };
+module.exports = { create, _finalVerifyEmail, read, verifyEmail };

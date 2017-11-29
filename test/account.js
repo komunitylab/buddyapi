@@ -80,8 +80,40 @@ describe('account', () => {
               }
             }
           })
-          .expect('Content-Type', /^application\/vnd\.api\+json/)
           .expect(200);
+      });
+
+      it('duplicate email', async () => {
+        // create unverified user with another code
+        const otherCode = await model.users.create({ username: 'other-test', email: 'test@example.com', role: '', givenName: '', familyName: '', gender: '', birthday: '', password: '' });
+
+        // first verification should pass
+        await agent
+          .patch('/account')
+          .send({
+            data: {
+              type: 'users',
+              id: 'test',
+              attributes: {
+                emailVerificationCode: code
+              }
+            }
+          })
+          .expect(200);
+
+        // second verification should fail with 409 Conflict
+        await agent
+          .patch('/account')
+          .send({
+            data: {
+              type: 'users',
+              id: 'other-test',
+              attributes: {
+                emailVerificationCode: otherCode
+              }
+            }
+          })
+          .expect(409);
       });
     });
 
@@ -105,7 +137,6 @@ describe('account', () => {
 
         should(response.body).have.propertyByPath('errors', 0, 'title')
           .eql('invalid id');
-
       });
 
       it('[invalid code] 400', async function () {

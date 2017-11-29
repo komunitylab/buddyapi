@@ -3,8 +3,9 @@
 const express = require('express'),
       bodyParser = require('body-parser');
 
-const users = require('./routes/users'),
-      account = require('./routes/account'),
+const account = require('./routes/account'),
+      auth = require('./routes/auth'),
+      users = require('./routes/users'),
       deserialize = require('./controllers/deserialize');
 
 const app = express();
@@ -19,8 +20,9 @@ app.use((req, res, next) => {
 
 app.use(deserialize);
 
-app.use('/users', users);
 app.use('/account', account);
+app.use('/auth', auth);
+app.use('/users', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
