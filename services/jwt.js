@@ -9,13 +9,19 @@ const config = require(path.resolve('./config'));
 /**
  * Provided user, response with jwt token
  */
-async function generate(user) {
+async function generate(user, isAdmin = false) {
   const verified = Boolean(user.email);
   const { username } = user;
 
   const payload = { username, verified };
 
-  return await (promisify(jwt.sign))(payload, config.jwt.secret, { algorithm: 'HS256', expiresIn: config.jwt.expirationTime });
+  if (isAdmin === true) {
+    payload.admin = true;
+  }
+
+  const expiresIn = (isAdmin) ? config.jwt.adminExpirationTime : config.jwt.expirationTime;
+
+  return await (promisify(jwt.sign))(payload, config.jwt.secret, { algorithm: 'HS256', expiresIn });
 
 }
 

@@ -11,9 +11,7 @@ const router = express.Router();
 router.route('/token')
   .get(validators.auth.getToken, authController.getToken);
 
-/*
 router.route('/token/admin')
   .get(validators.auth.getToken, authController.getAdminToken);
-*/
 
 module.exports = router;

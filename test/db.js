@@ -26,7 +26,8 @@ async function fill(definitions) {
   // set default definitions
   const defaults = {
     users: 0,
-    verifiedUsers: []
+    verifiedUsers: [],
+    admins: []
   };
   definitions = _.defaults(definitions, defaults);
 
@@ -40,6 +41,10 @@ async function fill(definitions) {
     // verify specified users
     if (user.verified) {
       await model.users._finalVerifyEmail(user.username);
+    }
+
+    if (user.admin) {
+      await model.users.updateAdmin(user.username, true);
     }
   }
 
@@ -61,7 +66,8 @@ function generateData(def) {
       birthday: '1991-01-01',
       gender: (n % 2) ? 'female': 'male',
       role: (n % 2) ? 'comer': 'buddy',
-      verified: def.verifiedUsers.includes(n)
+      verified: def.verifiedUsers.includes(n),
+      admin: def.admins.includes(n)
     };
   });
 

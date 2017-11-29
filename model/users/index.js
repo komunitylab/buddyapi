@@ -120,7 +120,17 @@ async function _finalVerifyEmail(username) {
   const params = [username];
 
   await pool.execute(query, params);
-
 }
 
-module.exports = { create, _finalVerifyEmail, read, verifyEmail };
+/**
+ * make or unmake user to admin
+ */
+async function updateAdmin(username, admin) {
+  // update the email and clear the email verification data
+  const query = 'UPDATE user SET admin = ? WHERE username = ?';
+  const params = [(admin === true) ? 1 : 0, username];
+
+  await pool.execute(query, params);
+}
+
+module.exports = { create, read, updateAdmin, verifyEmail, _finalVerifyEmail };
