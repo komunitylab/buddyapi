@@ -21,7 +21,7 @@ module.exports = [
       email: 'VARCHAR(128)', // email
       role: 'ENUM(\'buddy\', \'comer\')',
       admin: 'BOOLEAN DEFAULT FALSE',
-      activated: 'BOOLEAN DEFAULT FALSE', // if buddy, can contact comers (admin sets this)
+      active: 'BOOLEAN DEFAULT FALSE', // if buddy, can contact comers (admin sets this)
       available: 'BOOLEAN DEFAULT FALSE', // is buddy or comer looking for match?
       password_hash: 'CHAR(88)', // hashed password
       password_salt: 'CHAR(88)',

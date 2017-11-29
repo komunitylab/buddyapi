@@ -5,6 +5,21 @@ const {
   givenName, familyName, birthday, gender
 } = require('./paths').user;
 
+const patchActive = {
+  properties: {
+    body: {
+      properties: {
+        active: {
+          type: 'boolean'
+        },
+        id: username
+      },
+      required: ['id', 'active'],
+      additionalProperties: false
+    }
+  }
+};
+
 const post = {
   properties: {
     body: {
@@ -24,4 +39,4 @@ const post = {
   }
 };
 
-module.exports = { post };
+module.exports = { patchActive, post };

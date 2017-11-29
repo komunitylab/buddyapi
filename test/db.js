@@ -27,7 +27,10 @@ async function fill(definitions) {
   const defaults = {
     users: 0,
     verifiedUsers: [],
-    admins: []
+    admins: [],
+    buddies: [],
+    active: [],
+    comers: []
   };
   definitions = _.defaults(definitions, defaults);
 
@@ -46,6 +49,10 @@ async function fill(definitions) {
     if (user.admin) {
       await model.users.updateAdmin(user.username, true);
     }
+
+    if (user.active) {
+      await model.users.updateActive(user.username, true);
+    }
   }
 
   return data;
@@ -57,6 +64,13 @@ async function fill(definitions) {
 function generateData(def) {
 
   const users = _.range(def.users).map(n => {
+
+    const role = (def.buddies.includes(n))
+      ? 'buddy'
+      : (def.comers.includes(n))
+        ? 'comer'
+        : (n % 2) ? 'comer' : 'buddy';
+
     return {
       username: `user${n}`,
       password: `a*.0-p)${n}xiy&`,
@@ -65,9 +79,10 @@ function generateData(def) {
       familyName: `family${n}`,
       birthday: '1991-01-01',
       gender: (n % 2) ? 'female': 'male',
-      role: (n % 2) ? 'comer': 'buddy',
+      role,
       verified: def.verifiedUsers.includes(n),
-      admin: def.admins.includes(n)
+      admin: def.admins.includes(n),
+      active: def.active.includes(n) && def.buddies.includes(n) // only buddies should be active
     };
   });
 

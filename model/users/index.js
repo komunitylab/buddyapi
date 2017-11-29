@@ -126,11 +126,32 @@ async function _finalVerifyEmail(username) {
  * make or unmake user to admin
  */
 async function updateAdmin(username, admin) {
-  // update the email and clear the email verification data
+  // update the admin boolean
   const query = 'UPDATE user SET admin = ? WHERE username = ?';
   const params = [(admin === true) ? 1 : 0, username];
 
   await pool.execute(query, params);
 }
 
-module.exports = { create, read, updateAdmin, verifyEmail, _finalVerifyEmail };
+/**
+ * make buddy active or inactive
+ */
+async function updateActive(username, active) {
+  // update only buddies with verified email
+  const query = `UPDATE user SET active = ?
+    WHERE username = ? AND role = 'buddy' AND email IS NOT NULL`;
+  const params = [(active === true) ? 1 : 0, username];
+
+  const [{ affectedRows }] = await pool.execute(query, params);
+
+  switch (affectedRows) {
+    case 0:
+      throw new Error('not found');
+    case 1:
+      return;
+    default:
+      throw new Error('too many updates!');
+  }
+}
+
+module.exports = { create, read, updateActive, updateAdmin, verifyEmail, _finalVerifyEmail };

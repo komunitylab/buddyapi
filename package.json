@@ -6,6 +6,7 @@
     "start": "node ./bin/www",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "init-db": "node ./bin/init-database.js",
     "init-db-standalone": "node ./bin/init-database-standalone.js",
     "test": "NODE_ENV=test mocha ./test/ --watch",
     "test-once": "NODE_ENV=test mocha ./test/"

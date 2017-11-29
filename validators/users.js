@@ -2,6 +2,7 @@
 
 const validate = require('./validate');
 
-const post = validate('users/post');
+const patchActive = validate('users/patchActive', [['params.username', 'body.id']]),
+      post = validate('users/post');
 
-module.exports = { post };
+module.exports = { patchActive, post };
