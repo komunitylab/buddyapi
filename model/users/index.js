@@ -69,14 +69,19 @@ async function read(username, fields = ['username']) {
   }
 }
 
-async function list({ fields = ['username'], role, page: { offset = 0, limit = 10} = { } } = { }) {
+async function list({ fields = ['username'], role, page: { offset = 0, limit = 10} = { }, filter: { gender = null } } = { }) {
+
+  const genderFilter = (gender) ? `AND gender IN (${Array(gender.length).fill('?').join(',')})` : '';
+
   const snakeFields = fields.map(field => _.snakeCase(field));
   const query = `SELECT ${snakeFields.join(', ')} FROM user
     WHERE email IS NOT NULL
     AND role = ?
+    ${genderFilter}
     ORDER BY username
     LIMIT ?,?`;
-  const params = [role, offset, limit];
+
+  const params = [role].concat((gender) ? gender : [], [offset, limit]);
 
   const [rows] = await pool.execute(query, params);
 

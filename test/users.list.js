@@ -35,7 +35,16 @@ describe('list buddies and comers, filter', () => {
     await db.fill({
       users: 10,
       verifiedUsers: [0, 1, 2, 3, 4, 5, 6, 7],
-      details: [{}, { birthday: '1993-07-13' }], // age 24
+      details: [
+        null,
+        { birthday: '1993-07-13', gender: 'female' }, // age 24
+        null,
+        { gender: 'male' },
+        null,
+        { gender: 'other' },
+        null,
+        { gender: 'female' },
+      ],
       buddies: [0, 2, 4, 6, 8],
       active: [0, 2, 6],
       comers: [1, 3, 5, 7, 9]
@@ -91,6 +100,26 @@ describe('list buddies and comers, filter', () => {
 
         should(user).have.propertyByPath('attributes', 'age').eql(24);
         should(user).not.have.propertyByPath('attributes', 'birthday');
+      });
+
+      describe('?filter[gender]=male,female,other', () => {
+
+        it('list only genders specified', async () => {
+          const response = await agent
+            .get('/comers?filter[gender]=other,female')
+            .expect(200);
+
+          const found = response.body.data;
+          should(found.length).eql(3);
+        });
+
+      });
+
+      describe('?filter[age][min]=123&filter[age][max]=456', () => {
+        it('[age][min] show only older people, included');
+        it('[age][max] show only younger people, included');
+
+        it('[both] limit results from both sides');
       });
     });
 

@@ -19,7 +19,15 @@ function get(role) {
       // which attributes to read of every user
       const fields = ['username', 'givenName', 'familyName', 'birthday'];
 
-      const users = await model.users.list({ role, fields, page });
+      // get filters
+      let genderFilter = _.get(req, 'query.filter.gender');
+      genderFilter = (genderFilter) ? genderFilter.split(',') : null;
+
+      const filter = {
+        gender: genderFilter
+      };
+
+      const users = await model.users.list({ role, fields, page, filter });
 
       const sanitizedUsers = users.map(user => {
         const sanitized = _.pick(user, ['username', 'givenName']);
