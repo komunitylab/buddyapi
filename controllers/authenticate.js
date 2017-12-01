@@ -26,10 +26,16 @@ async function setAuthData(req, res, next) {
     const authHeader = req.headers.authorization;
 
     try {
-      const { verified, username, admin } = await jwtService.authenticate(authHeader);
+      const { verified, username, admin, role, active } = await jwtService.authenticate(authHeader);
       req.auth.logged = (verified === true) ? true : false;
       req.auth.username = username;
       req.auth.admin = (admin === true) ? true : false;
+      req.auth.role = role;
+
+      if (role === 'buddy') {
+        req.auth.active = active === true;
+      }
+
     } catch (e) {
       const error = { title: 'Not Authorized' };
 

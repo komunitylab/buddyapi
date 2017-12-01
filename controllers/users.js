@@ -1,9 +1,41 @@
 'use strict';
 
-const path = require('path');
+const _ = require('lodash'),
+      path = require('path');
 
 const model = require(path.resolve('./model')),
-      mailer = require(path.resolve('./services/mailer'));
+      mailer = require(path.resolve('./services/mailer')),
+      format = require(path.resolve('./services/format')),
+      userSerializer = require(path.resolve('./serializers/users'));
+
+function get(role) {
+  return async function (req, res, next) {
+    try {
+      const page = {
+        offset: _.get(req, 'query.page.offset', 0),
+        limit: _.get(req, 'query.page.limit', 10)
+      };
+
+      // which attributes to read of every user
+      const fields = ['username', 'givenName', 'familyName', 'birthday'];
+
+      const users = await model.users.list({ role, fields, page });
+
+      const sanitizedUsers = users.map(user => {
+        const sanitized = _.pick(user, ['username', 'givenName']);
+        sanitized.age = format.age(user.birthday);
+        return sanitized;
+      });
+
+      const output = userSerializer.user(sanitizedUsers);
+
+      return res.status(200).json(output);
+
+    } catch (e) {
+      return next(e);
+    }
+  };
+}
 
 async function post(req, res, next) {
   try {
@@ -42,4 +74,4 @@ async function patchActive(req, res, next) {
   }
 }
 
-module.exports = { patchActive, post };
+module.exports = { get, patchActive, post };

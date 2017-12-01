@@ -34,7 +34,7 @@ function loggedAgentFactory(user = {}, includeDefaults = true) {
 
   // create token
   const defaultPayload = { username: 'logged-user', verified: true };
-  const payload = Object.assign(defaultPayload, _.pick(user, ['username', 'verified', 'admin']));
+  const payload = Object.assign(defaultPayload, _.pick(user, ['username', 'verified', 'role', 'active', 'admin']));
 
   const token = jwt.sign(payload, jwtConfig.secret, {
     algorithm: 'HS256',

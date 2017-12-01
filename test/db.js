@@ -26,6 +26,7 @@ async function fill(definitions) {
   // set default definitions
   const defaults = {
     users: 0,
+    details: [],
     verifiedUsers: [],
     admins: [],
     buddies: [],
@@ -71,7 +72,7 @@ function generateData(def) {
         ? 'comer'
         : (n % 2) ? 'comer' : 'buddy';
 
-    return {
+    const user = {
       username: `user${n}`,
       password: `a*.0-p)${n}xiy&`,
       email: `user${n}@example.com`,
@@ -84,6 +85,11 @@ function generateData(def) {
       admin: def.admins.includes(n),
       active: def.active.includes(n) && def.buddies.includes(n) // only buddies should be active
     };
+
+    // overwrite with detail
+    Object.assign(user, def.details[n]);
+
+    return user;
   });
 
   return { users };

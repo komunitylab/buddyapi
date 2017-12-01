@@ -11,9 +11,13 @@ const config = require(path.resolve('./config'));
  */
 async function generate(user, isAdmin = false) {
   const verified = Boolean(user.email);
-  const { username } = user;
+  const { username, role, active } = user;
 
-  const payload = { username, verified };
+  const payload = { username, verified, role };
+
+  if (role === 'buddy') {
+    payload.active = !!active;
+  }
 
   if (isAdmin === true) {
     payload.admin = true;

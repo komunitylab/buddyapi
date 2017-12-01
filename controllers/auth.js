@@ -56,7 +56,7 @@ async function generateToken(credentials, admin = false) {
   const { name: username, pass: password } = credentials;
 
   // read basic user info and password hash info
-  const user = await model.users.read(username, ['username', 'email', 'passwordHash', 'passwordSalt', 'passwordIterations', 'admin']);
+  const user = await model.users.read(username, ['username', 'email', 'passwordHash', 'passwordSalt', 'passwordIterations', 'admin', 'role', 'active']);
 
   // compare given password and hashed password from database
   const {

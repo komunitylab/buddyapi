@@ -69,6 +69,20 @@ async function read(username, fields = ['username']) {
   }
 }
 
+async function list({ fields = ['username'], role, page: { offset = 0, limit = 10} = { } } = { }) {
+  const snakeFields = fields.map(field => _.snakeCase(field));
+  const query = `SELECT ${snakeFields.join(', ')} FROM user
+    WHERE email IS NOT NULL
+    AND role = ?
+    ORDER BY username
+    LIMIT ?,?`;
+  const params = [role, offset, limit];
+
+  const [rows] = await pool.execute(query, params);
+
+  return camelize(rows);
+}
+
 async function verifyEmail(username, code) {
   // read the temporary email data
   const {
@@ -154,4 +168,4 @@ async function updateActive(username, active) {
   }
 }
 
-module.exports = { create, read, updateActive, updateAdmin, verifyEmail, _finalVerifyEmail };
+module.exports = { create, list, read, updateActive, updateAdmin, verifyEmail, _finalVerifyEmail };

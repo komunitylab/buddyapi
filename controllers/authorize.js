@@ -12,4 +12,10 @@ function onlyAdmin(req, res, next) {
   return res.status(403).json(errorResponse);
 }
 
-module.exports = { onlyAdmin };
+function onlyActiveBuddy(req, res, next) {
+  if (req.auth.logged === true && req.auth.role === 'buddy' && req.auth.active === true) return next();
+
+  return res.status(403).json(errorResponse);
+}
+
+module.exports = { onlyActiveBuddy, onlyAdmin };

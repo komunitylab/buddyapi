@@ -6,6 +6,7 @@ const express = require('express'),
 const account = require('./routes/account'),
       auth = require('./routes/auth'),
       authenticate = require('./controllers/authenticate'),
+      comers = require('./routes/comers'),
       users = require('./routes/users'),
       deserialize = require('./controllers/deserialize');
 
@@ -25,6 +26,7 @@ app.use(authenticate);
 
 app.use('/account', account);
 app.use('/auth', auth);
+app.use('/comers', comers);
 app.use('/users', users);
 
 // catch 404 and forward to error handler
