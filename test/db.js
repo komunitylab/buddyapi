@@ -31,7 +31,8 @@ async function fill(definitions) {
     admins: [],
     buddies: [],
     active: [],
-    comers: []
+    comers: [],
+    languages: ['cs', 'ar', 'en', 'es', 'fr', 'ru', 'zh']
   };
   definitions = _.defaults(definitions, defaults);
 
@@ -54,6 +55,10 @@ async function fill(definitions) {
     if (user.active) {
       await model.users.updateActive(user.username, true);
     }
+  }
+
+  for (const language of data.languages) {
+    await model.languages.create(language);
   }
 
   return data;
@@ -92,7 +97,7 @@ function generateData(def) {
     return user;
   });
 
-  return { users };
+  return { users, languages: def.languages };
 }
 
 module.exports = { clear, fill };

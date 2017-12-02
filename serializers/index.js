@@ -12,6 +12,11 @@ const deserialize = new Deserializer({
         username: relationship.id
       };
     }
+  },
+  languages: {
+    valueForRelationship: function (relationship) {
+      return relationship.id;
+    }
   }
 }).deserialize;
 

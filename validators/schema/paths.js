@@ -15,4 +15,9 @@ const account = {
   code: { $ref: 'sch#/definitions/account/code' },
 };
 
-module.exports = { account, user };
+const language = {
+  code2: { $ref: 'sch#/definitions/language/code2' },
+  level: { $ref: 'sch#/definitions/language/level' }
+};
+
+module.exports = { account, language, user };

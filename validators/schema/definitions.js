@@ -51,4 +51,17 @@ const account = {
   }
 };
 
-module.exports = { account, user };
+const language = {
+  code2: {
+    type: 'string',
+    minLength: 2,
+    maxLength: 2,
+    pattern: '^[a-z]{2}$'
+  },
+  level: {
+    type: 'string',
+    enum: ['beginner', 'intermediate', 'advanced', 'native']
+  }
+};
+
+module.exports = { account, language, user };

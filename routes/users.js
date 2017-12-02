@@ -18,4 +18,7 @@ router.route('/:username')
   // set buddy to active or inactive
   .patch(controllers.authorize.onlyAdmin, validators.users.patchActive, controllers.users.patchActive);
 
+router.route('/:username/languages')
+  .post(controllers.authorize.onlyLoggedMe, validators.userLanguages.post, controllers.userLanguages.post);
+
 module.exports = router;

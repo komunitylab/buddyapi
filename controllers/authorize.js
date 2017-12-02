@@ -18,4 +18,10 @@ function onlyActiveBuddy(req, res, next) {
   return res.status(403).json(errorResponse);
 }
 
-module.exports = { onlyActiveBuddy, onlyAdmin };
+function onlyLoggedMe(req, res, next) {
+  if (req.auth.logged === true && req.auth.username === req.params.username) return next();
+
+  return res.status(403).json(errorResponse);
+}
+
+module.exports = { onlyActiveBuddy, onlyAdmin, onlyLoggedMe };

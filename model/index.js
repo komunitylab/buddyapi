@@ -1,5 +1,6 @@
 'use strict';
 
-const users = require('./users');
+const languages = require('./languages'),
+      users = require('./users');
 
-module.exports = { users };
+module.exports = { languages, users };

@@ -51,10 +51,7 @@ module.exports = [
     name: 'language',
     columns: {
       id: 'SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT',
-      code2: 'CHAR(2)',
-      cs: 'VARCHAR(32)',
-      en: 'VARCHAR(32)',
-      original: 'VARCHAR(32)'
+      code2: 'CHAR(2)'
     },
     keys: {
       primary: 'id'
