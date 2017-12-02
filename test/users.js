@@ -54,7 +54,7 @@ describe('/users', () => {
             role: 'buddy',
             givenName: 'Given',
             familyName: 'Family',
-            birthday: '1992-07-30',
+            birthday: new Date('1992-07-30').getTime(),
             gender: 'female',
           }
         }
@@ -77,7 +77,7 @@ describe('/users', () => {
           role: 'buddy',
           givenName: 'Given',
           familyName: 'Family',
-          birthday: '1992-07-30',
+          birthday: new Date('1992-07-30').getTime(),
           gender: 'female',
           created: Date.now()
         });
@@ -272,7 +272,7 @@ describe('/users', () => {
 
       it('[invalid birthday] 400', async () => {
         // invalid birthday
-        requestBody.data.attributes.birthday = '1628-02-11';
+        requestBody.data.attributes.birthday = new Date('1628-02-11').getTime();
 
         await agent
           .post('/users')

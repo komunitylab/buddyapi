@@ -37,13 +37,13 @@ describe('list buddies and comers, filter', () => {
       verifiedUsers: [0, 1, 2, 3, 4, 5, 6, 7],
       details: [
         null,
-        { birthday: '1993-07-13', gender: 'female' }, // age 24
+        { birthday: new Date('1993-07-13').getTime(), gender: 'female' }, // age 24
         null,
-        { gender: 'male' },
+        { birthday: new Date('1995-03-10').getTime(), gender: 'male' }, // age 22
         null,
-        { gender: 'other' },
+        { birthday: new Date('1994-11-01').getTime(), gender: 'other' }, // age 23
         null,
-        { gender: 'female' },
+        { birthday: new Date('1996-08-11').getTime(), gender: 'female' }, // age 21
       ],
       buddies: [0, 2, 4, 6, 8],
       active: [0, 2, 6],
@@ -116,10 +116,13 @@ describe('list buddies and comers, filter', () => {
       });
 
       describe('?filter[age][min]=123&filter[age][max]=456', () => {
-        it('[age][min] show only older people, included');
+
+        it('[age][min] show only older people, included', );
+
         it('[age][max] show only younger people, included');
 
         it('[both] limit results from both sides');
+
       });
     });
 

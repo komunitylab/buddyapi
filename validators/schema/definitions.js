@@ -33,10 +33,9 @@ const user = {
     pattern: '\\S'
   },
   birthday: {
-    type: 'string',
-    minLength: 10,
-    maxLength: 10,
-    pattern: '^((19|20)\\d\\d)-(0[1-9]|1[012])-(0[1-9]|[12]\\d|3[01])$'
+    type: 'integer', // javascript timestamp
+    minimum: new Date('1900-08-04').getTime(),
+    maximum: 1500000000000 // very recent timestamp
   },
   gender: {
     enum: ['female', 'male', 'other']

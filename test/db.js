@@ -78,7 +78,7 @@ function generateData(def) {
       email: `user${n}@example.com`,
       givenName: `Given${n}`,
       familyName: `family${n}`,
-      birthday: '1991-01-01',
+      birthday: new Date('1991-01-01').getTime(),
       gender: (n % 2) ? 'female': 'male',
       role,
       verified: def.verifiedUsers.includes(n),

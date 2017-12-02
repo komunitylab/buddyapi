@@ -29,18 +29,18 @@ module.exports = [
       given_name: 'VARCHAR(64)', // profile
       family_name: 'VARCHAR(64)', // profile
       gender: 'ENUM(\'male\', \'female\', \'other\')', // profile
-      birthday: 'CHAR(10)', // profile (display only age)
+      birthday: 'BIGINT', // profile (display only age), javascript timestamp (also before 1.1.1970)
       about: 'MEDIUMTEXT', // profile
       temporary_email: 'varchar(128)',
       te_hash: 'CHAR(88)', // hashed email verification code
       te_salt: 'CHAR(88)',
       te_iterations: 'MEDIUMINT UNSIGNED',
-      te_expire: 'BIGINT UNSIGNED', // when verification code expires
+      te_expire: 'BIGINT UNSIGNED', // when verification code expires, javascript timestamp
       pass_reset_hash: 'CHAR(88)',
       pass_reset_salt: 'CHAR(88)',
       pass_reset_iterations: 'MEDIUMINT UNSIGNED',
-      pass_reset_expire: 'BIGINT UNSIGNED',
-      created: 'BIGINT UNSIGNED'
+      pass_reset_expire: 'BIGINT UNSIGNED', // javascript timestamp
+      created: 'BIGINT UNSIGNED' // javascript timestamp
     },
     keys: {
       primary: 'id'
