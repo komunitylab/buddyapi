@@ -69,19 +69,38 @@ async function read(username, fields = ['username']) {
   }
 }
 
-async function list({ fields = ['username'], role, page: { offset = 0, limit = 10} = { }, filter: { gender = null } } = { }) {
+async function list({ fields = ['username'], role, page: { offset = 0, limit = 10} = { }, filter: { gender, minAge, maxAge } } = { }) {
 
+  // generate query:
+  //
+  // include filters
+  //
+  // gender
   const genderFilter = (gender) ? `AND gender IN (${Array(gender.length).fill('?').join(',')})` : '';
+  const genderParam = (gender) ? gender : [];
+  //
+  // age
+  const year = 365.25 * 24 * 3600 * 1000;
+  //
+  const minAgeFilter = (minAge) ? 'AND birthday < ?' : '';
+  const minAgeParam = (minAge) ? [Date.now() - minAge * year] : [];
+  //
+  const maxAgeFilter = (maxAge) ? 'AND birthday > ?' : '';
+  const maxAgeParam = (maxAge) ? [Date.now() - (maxAge + 1) * year] : [];
 
+  // format fields to return
   const snakeFields = fields.map(field => _.snakeCase(field));
+
   const query = `SELECT ${snakeFields.join(', ')} FROM user
     WHERE email IS NOT NULL
     AND role = ?
     ${genderFilter}
+    ${minAgeFilter}
+    ${maxAgeFilter}
     ORDER BY username
     LIMIT ?,?`;
 
-  const params = [role].concat((gender) ? gender : [], [offset, limit]);
+  const params = [role].concat(genderParam, minAgeParam, maxAgeParam, [offset, limit]);
 
   const [rows] = await pool.execute(query, params);
 

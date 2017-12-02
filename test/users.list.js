@@ -117,11 +117,32 @@ describe('list buddies and comers, filter', () => {
 
       describe('?filter[age][min]=123&filter[age][max]=456', () => {
 
-        it('[age][min] show only older people, included', );
+        it('[age][min] show only older people, included', async () => {
+          const response = await agent
+            .get('/comers?filter[age][min]=22')
+            .expect(200);
 
-        it('[age][max] show only younger people, included');
+          const found = response.body.data;
+          should(found.length).eql(3);
+        });
 
-        it('[both] limit results from both sides');
+        it('[age][max] show only younger people, included', async () => {
+          const response = await agent
+            .get('/comers?filter[age][max]=22')
+            .expect(200);
+
+          const found = response.body.data;
+          should(found.length).eql(2);
+        });
+
+        it('[both] limit results from both sides', async () => {
+          const response = await agent
+            .get('/comers?filter[age][min]=22&filter[age][max]=23')
+            .expect(200);
+
+          const found = response.body.data;
+          should(found.length).eql(2);
+        });
 
       });
     });

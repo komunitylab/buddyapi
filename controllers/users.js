@@ -23,8 +23,16 @@ function get(role) {
       let genderFilter = _.get(req, 'query.filter.gender');
       genderFilter = (genderFilter) ? genderFilter.split(',') : null;
 
+      let minAgeFilter = _.get(req, 'query.filter.age.min');
+      minAgeFilter = (minAgeFilter) ? +minAgeFilter : null;
+
+      let maxAgeFilter = _.get(req, 'query.filter.age.max');
+      maxAgeFilter = (maxAgeFilter) ? +maxAgeFilter : null;
+
       const filter = {
-        gender: genderFilter
+        gender: genderFilter,
+        minAge: minAgeFilter,
+        maxAge: maxAgeFilter
       };
 
       const users = await model.users.list({ role, fields, page, filter });
