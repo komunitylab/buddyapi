@@ -33,7 +33,30 @@ async function addToUser(username, language, level) {
 
     throw e;
   }
+}
 
+/**
+ * Remove language from user: Delete user-language relation.
+ * @param {string} username
+ * @param {string} language - the 2-letter language code
+ * @returns Promise
+ */
+async function removeFromUser(username, language) {
+  const query = `DELETE ul FROM user_lang AS ul
+    INNER JOIN user AS u ON u.id = ul.user_id
+    INNER JOIN language AS l ON l.id = ul.lang_id
+    WHERE u.username = ? AND l.code2 = ?`;
+  const params = [username, language];
+  const [info] = await pool.execute(query, params);
+
+  switch (info.affectedRows) {
+    case 0:
+      throw new Error('not found');
+    case 1:
+      return;
+    default:
+      throw new Error('multiple deletions');
+  }
 }
 
 async function readUserLanguages(username) {
@@ -46,4 +69,4 @@ async function readUserLanguages(username) {
   return rows;
 }
 
-module.exports = { create, addToUser, readUserLanguages };
+module.exports = { create, addToUser, readUserLanguages, removeFromUser };

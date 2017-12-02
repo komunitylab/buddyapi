@@ -2,6 +2,19 @@
 
 const { user: { username }, language: { code2, level } } = require('./paths');
 
+const del = {
+  properties: {
+    params: {
+      properties: {
+        username,
+        language: code2
+      },
+      required: ['username', 'language'],
+      additionalProperties: false
+    }
+  }
+};
+
 const post = {
   properties: {
     body: {
@@ -22,4 +35,4 @@ const post = {
   }
 };
 
-module.exports = { post };
+module.exports = { del, post };

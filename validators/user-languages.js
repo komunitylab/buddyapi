@@ -2,6 +2,7 @@
 
 const validate = require('./validate');
 
-const post = validate('userLanguages/post');
+const del = validate('userLanguages/del'),
+      post = validate('userLanguages/post');
 
-module.exports = { post };
+module.exports = { del, post };

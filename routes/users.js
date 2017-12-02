@@ -21,4 +21,7 @@ router.route('/:username')
 router.route('/:username/languages')
   .post(controllers.authorize.onlyLoggedMe, validators.userLanguages.post, controllers.userLanguages.post);
 
+router.route('/:username/languages/:language')
+  .delete(controllers.authorize.onlyLoggedMe, validators.userLanguages.del, controllers.userLanguages.del);
+
 module.exports = router;

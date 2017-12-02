@@ -31,18 +31,19 @@ describe('user-languages', () => {
     sandbox.restore();
   });
 
-  beforeEach(async () => {
-    const dbData = await db.fill({
-      users: 3,
-      verifiedUsers: [0, 1],
-      languages: ['cs', 'en', 'fi']
-    });
-
-    [loggedUser, otherUser] = dbData.users;
-  });
-
   describe('add and remove language from user', () => {
     describe('POST /users/:username/languages', () => {
+
+      beforeEach(async () => {
+        const dbData = await db.fill({
+          users: 3,
+          verifiedUsers: [0, 1],
+          languages: ['cs', 'en', 'fi']
+        });
+
+        [loggedUser, otherUser] = dbData.users;
+      });
+
       context('logged in as me', () => {
 
         beforeEach(() => {
@@ -305,18 +306,77 @@ describe('user-languages', () => {
     });
 
     describe('DELETE /users/:username/languages/:lang', () => {
+
+      beforeEach(async () => {
+        const dbData = await db.fill({
+          users: 3,
+          verifiedUsers: [0, 1],
+          languages: ['cs', 'en', 'fi'],
+          userLanguages: [[0, 0, 1], [0, 1, 3], [1, 2, 2]]
+        });
+
+        [loggedUser, otherUser] = dbData.users;
+      });
+
       context('logged in as me', () => {
+
+        beforeEach(() => {
+          agent = agentFactory.logged(loggedUser);
+        });
+
         context('valid data', () => {
-          it('204 and delete from database');
+
+          it('204 and delete from database', async () => {
+
+            // at the beginning user has 2 languages
+            const before = await model.languages.readUserLanguages(loggedUser.username);
+            should(before.length).eql(2);
+
+            await agent
+              .delete(`/users/${loggedUser.username}/languages/cs`)
+              .expect(204);
+
+            // after user has only 1 language
+            const after = await model.languages.readUserLanguages(loggedUser.username);
+            should(after.length).eql(1);
+            should(after[0].code2).eql('en');
+          });
+
         });
 
         context('invalid data', () => {
-          it('[nonexistent user-lang] 404');
+
+          it('[nonexistent user-lang] 404', async () => {
+            await agent
+              .delete(`/users/${loggedUser.username}/languages/fi`)
+              .expect(404);
+          });
+
+          it('[invalid language code param] 400', async () => {
+            const response = await agent
+              .delete(`/users/${loggedUser.username}/languages/123`)
+              .expect(400);
+
+            should(response.body).match({ errors: [{
+              title: 'invalid language'
+            }] });
+          });
+
         });
       });
 
       context('not logged in as me', () => {
-        it('403');
+
+        beforeEach(() => {
+          agent = agentFactory.logged(loggedUser);
+        });
+
+        it('403', async () => {
+          await agent
+            .delete(`/users/${otherUser.username}/languages/fi`)
+            .expect(403);
+        });
+
       });
     });
   });

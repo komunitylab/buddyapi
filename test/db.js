@@ -32,7 +32,8 @@ async function fill(definitions) {
     buddies: [],
     active: [],
     comers: [],
-    languages: ['cs', 'ar', 'en', 'es', 'fr', 'ru', 'zh']
+    languages: ['cs', 'ar', 'en', 'es', 'fr', 'ru', 'zh'],
+    userLanguages: []
   };
   definitions = _.defaults(definitions, defaults);
 
@@ -57,8 +58,14 @@ async function fill(definitions) {
     }
   }
 
+  // save languages to database
   for (const language of data.languages) {
     await model.languages.create(language);
+  }
+
+  // save user-languages to database
+  for (const { user: { username }, language, level } of data.userLanguages) {
+    await model.languages.addToUser(username, language, level);
   }
 
   return data;
@@ -97,7 +104,16 @@ function generateData(def) {
     return user;
   });
 
-  return { users, languages: def.languages };
+  const userLanguages = def.userLanguages.map(([userIndex, langIndex, levelIndex]) => {
+    const levels = ['beginner', 'intermediate', 'advanced', 'native'];
+    return {
+      user: users[userIndex],
+      language: def.languages[langIndex],
+      level: levels[levelIndex]
+    };
+  });
+
+  return { users, languages: def.languages, userLanguages };
 }
 
 module.exports = { clear, fill };
