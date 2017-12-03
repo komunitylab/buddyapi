@@ -10,7 +10,7 @@ const pathBlacklist = ['/auth/token', '/auth/token/', '/auth/token/admin', '/aut
 /**
  * Set req.auth to login data based on jwt token from Authorization header
  */
-async function setAuthData(req, res, next) {
+function setAuthData(req, res, next) {
   if (pathBlacklist.includes(req.path)) {
     return next();
   }
@@ -26,7 +26,7 @@ async function setAuthData(req, res, next) {
     const authHeader = req.headers.authorization;
 
     try {
-      const { verified, username, admin, role, active } = await jwtService.authenticate(authHeader);
+      const { verified, username, admin, role, active } = jwtService.authenticate(authHeader);
       req.auth.logged = (verified === true) ? true : false;
       req.auth.username = username;
       req.auth.admin = (admin === true) ? true : false;

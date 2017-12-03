@@ -1,15 +1,19 @@
 'use strict';
 
 const jwt = require('jsonwebtoken'),
-      path = require('path'),
-      { promisify } = require('util');
+      path = require('path');
 
 const config = require(path.resolve('./config'));
+
+/*
+ * TODO there is a confusion whether jsonwebtoken is or will be asynchronous.
+ * Currently jwt library is synchronous and callbacks may be deprecated in future.
+ */
 
 /**
  * Provided user, response with jwt token
  */
-async function generate(user, isAdmin = false) {
+function generate(user, isAdmin = false) {
   const verified = Boolean(user.email);
   const { username, role, active } = user;
 
@@ -25,20 +29,20 @@ async function generate(user, isAdmin = false) {
 
   const expiresIn = (isAdmin) ? config.jwt.adminExpirationTime : config.jwt.expirationTime;
 
-  return await (promisify(jwt.sign))(payload, config.jwt.secret, { algorithm: 'HS256', expiresIn });
+  return jwt.sign(payload, config.jwt.secret, { algorithm: 'HS256', expiresIn });
 
 }
 
 /**
  * provide Bearer header + jwt token, return authentication data or throw error
  */
-async function authenticate(authHeader) {
+function authenticate(authHeader) {
   const [type, token] = authHeader.split(' ');
   if (type !== 'Bearer') {
     throw new Error('invalid authorization method');
   }
 
-  return await jwt.verify(token, config.jwt.secret);
+  return jwt.verify(token, config.jwt.secret);
 }
 
-module.exports = { generate , authenticate };
+module.exports = { generate, authenticate };

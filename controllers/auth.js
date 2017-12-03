@@ -82,7 +82,7 @@ async function generateToken(credentials, admin = false) {
   }
 
   // generate token
-  return await jwtService.generate(user, admin);
+  return jwtService.generate(user, admin);
 }
 
 function generateErrorResponse(err) {
