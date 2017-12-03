@@ -13,6 +13,7 @@ const agentFactory = require('./agent'),
 
 describe('list buddies and comers, filter', () => {
   let agent,
+      dbData,
       sandbox;
 
   beforeEach(() => {
@@ -32,7 +33,7 @@ describe('list buddies and comers, filter', () => {
   });
 
   beforeEach(async () => {
-    await db.fill({
+    dbData = await db.fill({
       users: 10,
       verifiedUsers: [0, 1, 2, 3, 4, 5, 6, 7],
       details: [
@@ -47,7 +48,9 @@ describe('list buddies and comers, filter', () => {
       ],
       buddies: [0, 2, 4, 6, 8],
       active: [0, 2, 6],
-      comers: [1, 3, 5, 7, 9]
+      comers: [1, 3, 5, 7, 9],
+      languages: ['ar', 'en', 'cs', 'sk'],
+      userLanguages: [[1, 0, 1], [1, 2, 3], [3, 1, 0], [3, 2, 1], [5, 0, 3], [7, 3, 3]]
     });
   });
 
@@ -142,6 +145,55 @@ describe('list buddies and comers, filter', () => {
 
           const found = response.body.data;
           should(found.length).eql(2);
+        });
+
+      });
+
+      describe('?filter[language]=aa,bb,cc', () => {
+        it('[1 language] show only users who have the language', async () => {
+          const response = await agent
+            .get('/comers?filter[language]=ar')
+            .expect(200);
+
+          const found = response.body.data;
+          should(found.length).eql(2);
+        });
+
+        it('[multiple language] show only users who have the language', async () => {
+          const response = await agent
+            .get('/comers?filter[language]=en,cs,ar')
+            .expect(200);
+
+          const found = response.body.data;
+          should(found.length).eql(3);
+        });
+
+        it('sort outcome by language levels of searched languages', async () => {
+          const response = await agent
+            .get('/comers?filter[language]=en,cs,ar')
+            .expect(200);
+
+          const found = response.body.data;
+          should(found.length).eql(3);
+
+          // check that users are sorted by language levels
+          // and languages of user also sorted by language levels
+          should(found[0].id).eql(dbData.users[1].username);
+          should(found[0].attributes).have.property('languages').deepEqual([
+            { code2: 'cs', level: 'native' },
+            { code2: 'ar', level: 'intermediate' }
+          ]);
+
+          should(found[1].id).eql(dbData.users[5].username);
+          should(found[1].attributes).have.property('languages').deepEqual([
+            { code2: 'ar', level: 'native' }
+          ]);
+
+          should(found[2].id).eql(dbData.users[3].username);
+          should(found[2].attributes).have.property('languages').deepEqual([
+            { code2: 'cs', level: 'intermediate' },
+            { code2: 'en', level: 'beginner' }
+          ]);
         });
 
       });

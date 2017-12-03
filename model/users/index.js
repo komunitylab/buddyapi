@@ -69,7 +69,7 @@ async function read(username, fields = ['username']) {
   }
 }
 
-async function list({ fields = ['username'], role, page: { offset = 0, limit = 10} = { }, filter: { gender, minAge, maxAge } } = { }) {
+async function list({ fields = ['username'], role, page: { offset = 0, limit = 10} = { }, filter: { gender, minAge, maxAge, language } } = { }) {
 
   // generate query:
   //
@@ -87,22 +87,60 @@ async function list({ fields = ['username'], role, page: { offset = 0, limit = 1
   //
   const maxAgeFilter = (maxAge) ? 'AND birthday > ?' : '';
   const maxAgeParam = (maxAge) ? [Date.now() - (maxAge + 1) * year] : [];
+  //
+  // languages
+  const languageFilter = (language) ? `AND l.code2 IN (${Array(language.length).fill('?').join(',')})` : '';
+  const languageParam = (language) ? language: [];
 
   // format fields to return
   const snakeFields = fields.map(field => _.snakeCase(field));
 
-  const query = `SELECT ${snakeFields.join(', ')} FROM user
-    WHERE email IS NOT NULL
-    AND role = ?
+  const query = `SELECT ${snakeFields.join(', ')},
+    GROUP_CONCAT(l.code2 SEPARATOR ',') AS languages,
+    GROUP_CONCAT(ul.level SEPARATOR ',') AS levels,
+    SUM(ul.level) AS level_sum
+    FROM user AS u
+    LEFT JOIN user_lang AS ul ON ul.user_id = u.id
+    LEFT JOIN language AS l ON ul.lang_id = l.id
+    WHERE u.email IS NOT NULL
+    AND u.role = ?
+    ${languageFilter}
     ${genderFilter}
     ${minAgeFilter}
     ${maxAgeFilter}
-    ORDER BY username
+    GROUP BY u.id
+    ORDER BY ${(language) ? 'level_sum DESC' : 'u.username'}
     LIMIT ?,?`;
 
-  const params = [role].concat(genderParam, minAgeParam, maxAgeParam, [offset, limit]);
+  const params = [role].concat(languageParam, genderParam, minAgeParam, maxAgeParam, [offset, limit]);
 
   const [rows] = await pool.execute(query, params);
+
+  // remap languages and levels strings to array
+  rows.forEach(row => {
+    if (row.languages) {
+      const codes = row.languages.split(',');
+      const levels = row.levels.split(',');
+
+      const defLevels = ['beginner', 'intermediate', 'advanced', 'native'];
+
+      row.languages = codes.map((code, i) => {
+        return {
+          code2: code,
+          level: levels[i]
+        };
+      }).sort((a, b) => {
+        const aLevel = defLevels.indexOf(a.level);
+        const bLevel = defLevels.indexOf(b.level);
+
+        return (aLevel > bLevel) ? -1 : 1;
+      });
+    } else {
+      row.languages = [];
+    }
+
+    delete row.levels;
+  });
 
   return camelize(rows);
 }

@@ -17,7 +17,7 @@ function get(role) {
       };
 
       // which attributes to read of every user
-      const fields = ['username', 'givenName', 'familyName', 'birthday'];
+      const fields = ['username', 'givenName', 'familyName', 'birthday', 'role'];
 
       // get filters
       let genderFilter = _.get(req, 'query.filter.gender');
@@ -29,16 +29,20 @@ function get(role) {
       let maxAgeFilter = _.get(req, 'query.filter.age.max');
       maxAgeFilter = (maxAgeFilter) ? +maxAgeFilter : null;
 
+      let languageFilter = _.get(req, 'query.filter.language');
+      languageFilter = (languageFilter) ? languageFilter.split(',') : null;
+
       const filter = {
         gender: genderFilter,
         minAge: minAgeFilter,
-        maxAge: maxAgeFilter
+        maxAge: maxAgeFilter,
+        language: languageFilter
       };
 
       const users = await model.users.list({ role, fields, page, filter });
 
       const sanitizedUsers = users.map(user => {
-        const sanitized = _.pick(user, ['username', 'givenName']);
+        const sanitized = _.pick(user, ['username', 'givenName', 'role', 'languages']);
         sanitized.age = format.age(user.birthday);
         return sanitized;
       });
