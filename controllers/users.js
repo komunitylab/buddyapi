@@ -17,7 +17,7 @@ function get(role) {
       };
 
       // which attributes to read of every user
-      const fields = ['username', 'givenName', 'familyName', 'birthday', 'role'];
+      const fields = ['username', 'givenName', 'familyName', 'birthday', 'gender', 'role'];
 
       // get filters
       let genderFilter = _.get(req, 'query.filter.gender');
@@ -42,8 +42,14 @@ function get(role) {
       const users = await model.users.list({ role, fields, page, filter });
 
       const sanitizedUsers = users.map(user => {
-        const sanitized = _.pick(user, ['username', 'givenName', 'role', 'languages']);
+        const sanitized = _.pick(user, ['username', 'givenName', 'role', 'languages', 'gender']);
         sanitized.age = format.age(user.birthday);
+
+        // buddies can share family name, too
+        if (role === 'buddy') {
+          sanitized.familyName = user.familyName;
+        }
+
         return sanitized;
       });
 

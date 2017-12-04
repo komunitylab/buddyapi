@@ -35,24 +35,28 @@ describe('list buddies and comers, filter', () => {
   beforeEach(async () => {
     dbData = await db.fill({
       users: 12,
-      verifiedUsers: [0, 1, 2, 3, 4, 5, 6, 7, 11],
+      verifiedUsers: [0, 1, 2, 3, 4, 5, 6, 7, 10, 11],
       details: [
-        null,
+        { gender: 'male' },
         { birthday: new Date('1993-07-13').getTime(), gender: 'female' }, // age 24
-        null,
+        { gender: 'female' },
         { birthday: new Date('1995-03-10').getTime(), gender: 'male' }, // age 22
-        null,
+        { gender: 'female' },
         { birthday: new Date('1994-11-01').getTime(), gender: 'other' }, // age 23
-        null,
+        { gender: 'female' },
         { birthday: new Date('1996-08-11').getTime(), gender: 'female' }, // age 21
-        null, null, null,
-        { available: false }
+        null, null,
+        { available: false }, // not available buddy
+        { available: false } // not available comer
       ],
       buddies: [0, 2, 4, 6, 8],
       active: [0, 2, 6],
       comers: [1, 3, 5, 7, 9],
       languages: ['ar', 'en', 'cs', 'sk'],
-      userLanguages: [[1, 0, 1], [1, 2, 3], [3, 1, 0], [3, 2, 1], [5, 0, 3], [7, 3, 3]]
+      userLanguages: [
+        [1, 0, 1], [1, 2, 3], [3, 1, 0], [3, 2, 1], [5, 0, 3], [7, 3, 3],
+        [0, 0, 1], [0, 1, 0], [2, 0, 2],
+      ]
     });
   });
 
@@ -241,5 +245,68 @@ describe('list buddies and comers, filter', () => {
 
   describe('GET /buddies', () => {
 
+    context('logged in as comer', () => {
+
+      beforeEach(() => {
+        agent = agentFactory.logged({ role: 'comer' });
+      });
+
+      it('list verified, available, active buddies', async () => {
+        const response = await agent
+          .get('/buddies')
+          .expect(200);
+
+        should(response.body).have.property('data').Array().length(3);
+
+        const [user] = response.body.data;
+
+        should(user).have.propertyByPath('attributes', 'role');
+        should(user).have.propertyByPath('attributes', 'gender');
+      });
+
+      it('show both given name and family name', async () => {
+        const response = await agent
+          .get('/buddies')
+          .expect(200);
+
+        const [user] = response.body.data;
+        should(user).have.propertyByPath('attributes', 'givenName');
+        should(user).have.propertyByPath('attributes', 'familyName');
+      });
+
+      it('all the filters work like GET /comers by active buddies', async () => {
+        const response = await agent
+          .get('/buddies?filter[gender]=female&filter[age][min]=22&filter[language]=ar')
+          .expect(200);
+
+        should(response.body).have.property('data').Array().length(1);
+        const [user] = response.body.data;
+
+        // user0 is male and user6 doesn't speak arabic, only user2 is a verified, available buddy which passes all the filters
+        should(user).have.property('id').eql(dbData.users[2].username);
+
+        should(user).have.propertyByPath('attributes', 'languages').match([{
+          code2: 'ar',
+          level: 'advanced'
+        }]);
+      });
+
+    });
+
+    context('logged in as buddy', () => {
+      it('403', async () => {
+        await agentFactory.logged({ role: 'buddy', active: 'true' })
+          .get('/buddies')
+          .expect(403);
+      });
+    });
+
+    context('not logged', () => {
+      it('403', async () => {
+        await agentFactory()
+          .get('/buddies')
+          .expect(403);
+      });
+    });
   });
 });

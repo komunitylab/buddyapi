@@ -102,6 +102,8 @@ async function list({ fields = ['username'], role, page: { offset = 0, limit = 1
   const languageFilter = (language) ? `AND l.code2 IN (${Array(language.length).fill('?').join(',')})` : '';
   const languageParam = (language) ? language: [];
 
+  const onlyActiveBuddy = (role === 'buddy') ? 'AND u.active' : '';
+
   // format fields to return
   const snakeFields = fields.map(field => _.snakeCase(field));
 
@@ -115,6 +117,7 @@ async function list({ fields = ['username'], role, page: { offset = 0, limit = 1
     WHERE u.email IS NOT NULL
     AND u.available
     AND u.role = ?
+    ${onlyActiveBuddy}
     ${languageFilter}
     ${genderFilter}
     ${minAgeFilter}

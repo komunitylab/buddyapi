@@ -6,6 +6,7 @@ const express = require('express'),
 const account = require('./routes/account'),
       auth = require('./routes/auth'),
       authenticate = require('./controllers/authenticate'),
+      buddies = require('./routes/buddies'),
       comers = require('./routes/comers'),
       users = require('./routes/users'),
       deserialize = require('./controllers/deserialize');
@@ -26,6 +27,7 @@ app.use(authenticate);
 
 app.use('/account', account);
 app.use('/auth', auth);
+app.use('/buddies', buddies);
 app.use('/comers', comers);
 app.use('/users', users);
 

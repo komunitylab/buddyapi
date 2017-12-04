@@ -3,7 +3,7 @@
 const Serializer = require('jsonapi-serializer').Serializer;
 
 const userSerializer = new Serializer('users', {
-  attributes: ['givenName', 'familyName', 'age', 'role', 'languages'],
+  attributes: ['givenName', 'familyName', 'age', 'role', 'gender', 'languages'],
   keyForAttribute: 'camelCase',
   id: 'username'
 });
