@@ -70,7 +70,7 @@ describe('/users', () => {
           .expect(201);
 
         // check that user was saved to database
-        const user = await userModel.read('testuser', ['username', 'temporaryEmail', 'role', 'givenName', 'familyName', 'birthday', 'gender', 'created']);
+        const user = await userModel.read('testuser', ['username', 'temporaryEmail', 'role', 'givenName', 'familyName', 'birthday', 'gender', 'created', 'available', 'active']);
         should(user).containDeep({
           username: 'testuser',
           temporaryEmail: 'email@example.com',
@@ -79,7 +79,9 @@ describe('/users', () => {
           familyName: 'Family',
           birthday: new Date('1992-07-30').getTime(),
           gender: 'female',
-          created: Date.now()
+          created: Date.now(),
+          available: true,
+          active: false
         });
       });
 

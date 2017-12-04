@@ -59,6 +59,16 @@ async function read(username, fields = ['username']) {
 
   const [rows] = await pool.execute(query, params);
 
+  // parse booleans from mysql's TINYINT to boolean
+  const booleans = ['active', 'available', 'admin'];
+  rows.forEach(row => {
+    booleans.forEach(field => {
+      if (_.has(row, field)) {
+        row[field] = !!row[field];
+      }
+    });
+  });
+
   switch (rows.length) {
     case 0:
       throw new Error('user not found');

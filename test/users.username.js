@@ -41,7 +41,7 @@ describe('user', () => {
           it('respond 200 and update availability to true', async () => {
 
             const userBefore = await model.users.read(unavailableUser.username, ['username', 'available']);
-            should(userBefore.available).eql(0);
+            should(userBefore.available).eql(false);
 
             await agentFactory.logged(unavailableUser)
               .patch(`/users/${unavailableUser.username}`)
@@ -57,13 +57,13 @@ describe('user', () => {
               .expect(200);
 
             const userAfter = await model.users.read(unavailableUser.username, ['username', 'available']);
-            should(userAfter.available).eql(1);
+            should(userAfter.available).eql(true);
           });
 
           it('respond 200 and update availability to false', async () => {
 
             const userBefore = await model.users.read(availableUser.username, ['username', 'available']);
-            should(userBefore.available).eql(1);
+            should(userBefore.available).eql(true);
 
             await agent
               .patch(`/users/${availableUser.username}`)
@@ -79,7 +79,7 @@ describe('user', () => {
               .expect(200);
 
             const userAfter = await model.users.read(availableUser.username, ['username', 'available']);
-            should(userAfter.available).eql(0);
+            should(userAfter.available).eql(false);
           });
         });
 

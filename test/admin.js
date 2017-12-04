@@ -60,7 +60,7 @@ describe('admin', () => {
           // before buddy should be inactive
           const before = await model.users.read(inactiveBuddy.username, ['active', 'role', 'email']);
 
-          should(before.active).eql(0);
+          should(before.active).eql(false);
           should(before.role).eql('buddy');
           should(before.email).ok();
 
@@ -80,7 +80,7 @@ describe('admin', () => {
           // after buddy should be inactive
           const after = await model.users.read(inactiveBuddy.username, ['active']);
 
-          should(after.active).eql(1);
+          should(after.active).eql(true);
         });
 
         it('[desactivate] make buddy active: false', async () => {
@@ -88,7 +88,7 @@ describe('admin', () => {
           // before buddy should be inactive
           const before = await model.users.read(activeBuddy.username, ['active', 'role', 'email']);
 
-          should(before.active).eql(1);
+          should(before.active).eql(true);
           should(before.role).eql('buddy');
           should(before.email).ok();
 
@@ -108,7 +108,7 @@ describe('admin', () => {
           // after buddy should be inactive
           const after = await model.users.read(activeBuddy.username, ['active']);
 
-          should(after.active).eql(0);
+          should(after.active).eql(false);
         });
       });
 
