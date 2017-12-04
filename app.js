@@ -8,6 +8,7 @@ const account = require('./routes/account'),
       authenticate = require('./controllers/authenticate'),
       buddies = require('./routes/buddies'),
       comers = require('./routes/comers'),
+      messages = require('./routes/messages'),
       users = require('./routes/users'),
       deserialize = require('./controllers/deserialize');
 
@@ -29,6 +30,7 @@ app.use('/account', account);
 app.use('/auth', auth);
 app.use('/buddies', buddies);
 app.use('/comers', comers);
+app.use('/messages', messages);
 app.use('/users', users);
 
 // catch 404 and forward to error handler

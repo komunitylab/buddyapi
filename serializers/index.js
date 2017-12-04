@@ -8,9 +8,7 @@ const deserialize = new Deserializer({
   keyForAttribute: 'camelCase',
   users: {
     valueForRelationship: function (relationship) {
-      return {
-        username: relationship.id
-      };
+      return relationship.id;
     }
   },
   languages: {

@@ -50,7 +50,7 @@ module.exports = [
   {
     name: 'language',
     columns: {
-      id: 'SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT',
+      id: 'INT UNSIGNED NOT NULL AUTO_INCREMENT',
       code2: 'CHAR(2)'
     },
     keys: {
@@ -62,7 +62,7 @@ module.exports = [
     name: 'user_lang',
     columns: {
       user_id: 'INT UNSIGNED NOT NULL',
-      lang_id: 'SMALLINT UNSIGNED NOT NULL',
+      lang_id: 'INT UNSIGNED NOT NULL',
       level: 'ENUM(\'beginner\', \'intermediate\', \'advanced\', \'native\')'
     },
     keys: {
@@ -80,5 +80,32 @@ module.exports = [
       ]
     },
     unique: [['user_id', 'lang_id']]
+  },
+  {
+    name: 'message',
+    columns: {
+      id: 'BIGINT UNSIGNED NOT NULL AUTO_INCREMENT',
+      from_user_id: 'INT UNSIGNED NOT NULL',
+      to_user_id: 'INT UNSIGNED NOT NULL',
+      created: 'BIGINT UNSIGNED', // timestamp
+      is_read: 'BOOLEAN DEFAULT FALSE',
+      is_notified: 'BOOLEAN DEFAULT FALSE',
+      body: 'VARCHAR(4096)'
+    },
+    keys: {
+      primary: 'id',
+      foreign: [
+        {
+          col: 'from_user_id',
+          ref: 'user(id)',
+          more: 'ON DELETE CASCADE'
+        },
+        {
+          col: 'to_user_id',
+          ref: 'user(id)',
+          more: 'ON DELETE CASCADE'
+        }
+      ]
+    }
   }
 ];
