@@ -10,7 +10,7 @@ const pool = require('../db'),
 /**
  * Save a new user into database
  */
-async function create({ username, email, role, givenName, familyName, gender, birthday, password }) {
+async function create({ username, email, role, givenName, familyName, gender, birthday, password, available = true }) {
 
   const { hash, salt, iterations } = await account.hash(password);
 
@@ -24,16 +24,16 @@ async function create({ username, email, role, givenName, familyName, gender, bi
     (username, temporary_email, role, given_name, family_name, gender, birthday,
       password_hash, password_salt, password_iterations,
       te_hash, te_salt, te_iterations, te_expire,
-      created)
+      available, created)
     VALUES (?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?,
       ?, ?, ?, ?,
-      ?)`;
+      ?, ?)`;
   const params = [
     username, email, role, givenName, familyName, gender, birthday,
     hash, salt, iterations,
     teHash, teSalt, teIterations, created + config.emailVerificationCodeExpire,
-    created
+    ~~available, created
   ];
 
   try {
@@ -230,4 +230,25 @@ async function updateActive(username, active) {
   }
 }
 
-module.exports = { create, list, read, updateActive, updateAdmin, verifyEmail, _finalVerifyEmail };
+/**
+ * make user (buddy or comer) available or unavailable
+ */
+async function updateAvailable(username, available) {
+  // update only buddies with verified email
+  const query = `UPDATE user SET available = ?
+    WHERE username = ? AND email IS NOT NULL`;
+  const params = [(available === true) ? 1 : 0, username];
+
+  const [{ affectedRows }] = await pool.execute(query, params);
+
+  switch (affectedRows) {
+    case 0:
+      throw new Error('not found');
+    case 1:
+      return;
+    default:
+      throw new Error('too many updates!');
+  }
+}
+
+module.exports = { create, list, read, updateActive, updateAdmin, updateAvailable, verifyEmail, _finalVerifyEmail };

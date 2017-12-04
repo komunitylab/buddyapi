@@ -16,7 +16,11 @@ router.route('/')
 
 router.route('/:username')
   // set buddy to active or inactive
-  .patch(controllers.authorize.onlyAdmin, validators.users.patchActive, controllers.users.patchActive);
+  .patch(controllers.go(['body.active']), controllers.authorize.onlyAdmin, validators.users.patchActive, controllers.users.patchActive);
+
+router.route('/:username')
+  // set self to available or unavailable
+  .patch(controllers.go(['body.available']), controllers.authorize.onlyLoggedMe, validators.users.patchAvailable, controllers.users.patchAvailable);
 
 router.route('/:username/languages')
   .post(controllers.authorize.onlyLoggedMe, validators.userLanguages.post, controllers.userLanguages.post);

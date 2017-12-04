@@ -20,6 +20,21 @@ const patchActive = {
   }
 };
 
+const patchAvailable = {
+  properties: {
+    body: {
+      properties: {
+        available: {
+          type: 'boolean'
+        },
+        id: username
+      },
+      required: ['id', 'available'],
+      additionalProperties: false
+    }
+  }
+};
+
 const post = {
   properties: {
     body: {
@@ -39,4 +54,4 @@ const post = {
   }
 };
 
-module.exports = { patchActive, post };
+module.exports = { patchActive, patchAvailable, post };

@@ -94,4 +94,22 @@ async function patchActive(req, res, next) {
   }
 }
 
-module.exports = { get, patchActive, post };
+async function patchAvailable(req, res, next) {
+  try {
+    const { available } = req.body;
+    const { username } = req.params;
+
+    await model.users.updateAvailable(username, available);
+    return res.status(200).json();
+  } catch (e) {
+    // error responses
+    switch (e.message) {
+      case 'not found':
+        return res.status(404).json();
+      default:
+        return next(e);
+    }
+  }
+}
+
+module.exports = { get, patchActive, patchAvailable, post };

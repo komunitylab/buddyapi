@@ -95,6 +95,7 @@ function generateData(def) {
       role,
       verified: def.verifiedUsers.includes(n),
       admin: def.admins.includes(n),
+      available: _.has(def, 'available') ? def.available : true,
       active: def.active.includes(n) && def.buddies.includes(n) // only buddies should be active
     };
 
