@@ -34,8 +34,8 @@ describe('list buddies and comers, filter', () => {
 
   beforeEach(async () => {
     dbData = await db.fill({
-      users: 10,
-      verifiedUsers: [0, 1, 2, 3, 4, 5, 6, 7],
+      users: 12,
+      verifiedUsers: [0, 1, 2, 3, 4, 5, 6, 7, 11],
       details: [
         null,
         { birthday: new Date('1993-07-13').getTime(), gender: 'female' }, // age 24
@@ -45,6 +45,8 @@ describe('list buddies and comers, filter', () => {
         { birthday: new Date('1994-11-01').getTime(), gender: 'other' }, // age 23
         null,
         { birthday: new Date('1996-08-11').getTime(), gender: 'female' }, // age 21
+        null, null, null,
+        { available: false }
       ],
       buddies: [0, 2, 4, 6, 8],
       active: [0, 2, 6],
@@ -56,7 +58,7 @@ describe('list buddies and comers, filter', () => {
 
   describe('GET /comers', () => {
 
-    context('logged as buddy', () => {
+    context('logged as active buddy', () => {
 
       beforeEach(() => {
         agent = agentFactory.logged({
@@ -65,7 +67,7 @@ describe('list buddies and comers, filter', () => {
         });
       });
 
-      it('list comers', async () => {
+      it('list comers (only verified and available)', async () => {
         const response = await agent
           .get('/comers')
           .expect(200);

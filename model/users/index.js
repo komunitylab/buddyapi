@@ -113,6 +113,7 @@ async function list({ fields = ['username'], role, page: { offset = 0, limit = 1
     LEFT JOIN user_lang AS ul ON ul.user_id = u.id
     LEFT JOIN language AS l ON ul.lang_id = l.id
     WHERE u.email IS NOT NULL
+    AND u.available
     AND u.role = ?
     ${languageFilter}
     ${genderFilter}
