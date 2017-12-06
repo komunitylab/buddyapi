@@ -3,11 +3,12 @@
 const express = require('express'),
       path = require('path');
 
-const controllers = require(path.resolve('./controllers'));
+const controllers = require(path.resolve('./controllers')),
+      validators = require(path.resolve('./validators'));
 
 const router = express.Router();
 
 router.route('/')
-  .post(controllers.messages.post);
+  .post(controllers.authorize.onlyActiveBuddyOrComer, validators.messages.post, controllers.messages.post);
 
 module.exports = router;

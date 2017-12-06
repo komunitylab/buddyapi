@@ -20,4 +20,8 @@ const language = {
   level: { $ref: 'sch#/definitions/language/level' }
 };
 
-module.exports = { account, language, user };
+const message = {
+  body: { $ref: 'sch#/definitions/message/body' }
+};
+
+module.exports = { account, language, message, user };

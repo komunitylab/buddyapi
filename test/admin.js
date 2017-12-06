@@ -185,7 +185,7 @@ describe('admin', () => {
 
           should(response.body).match({ errors: [{
             title: 'invalid property',
-            detail: 'unexpected property'
+            detail: 'unexpected property additional'
           }] });
         });
 

@@ -64,4 +64,13 @@ const language = {
   }
 };
 
-module.exports = { account, language, user };
+const message = {
+  body: {
+    type: 'string',
+    minLength: 1,
+    maxLength: 4096,
+    pattern: '\\S' // at least 1 non-space character
+  }
+};
+
+module.exports = { account, language, message, user };

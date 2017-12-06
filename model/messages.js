@@ -40,11 +40,25 @@ async function create(sender, receiver, body) {
     SELECT from_user.id, to_user.id, ?, ?, 0, 0
     FROM user AS from_user CROSS JOIN user AS to_user
     WHERE from_user.username = ?
-    AND to_user.username = ?`;
+    AND to_user.username = ?
+    AND from_user.email IS NOT NULL
+    AND to_user.email IS NOT NULL
+    AND ((from_user.role = 'buddy' AND from_user.active = 1 AND to_user.role = 'comer')
+    OR (to_user.role = 'buddy' AND to_user.active = 1 AND from_user.role = 'comer'))
+  `;
 
   const params = [body, Date.now(), sender, receiver];
 
-  await pool.execute(query, params);
+  const [info] = await pool.execute(query, params);
+
+  switch (info.affectedRows) {
+    case 0:
+      throw new Error('not found');
+    case 1:
+      return;
+    default:
+      throw new Error('multiple inserts');
+  }
 }
 
 /**
@@ -62,16 +76,16 @@ async function readUnnotified() {
     INNER JOIN user AS from_user ON from_user.id = m.from_user_id
     INNER JOIN user AS to_user ON to_user.id = m.to_user_id
     WHERE is_read = 0 AND is_notified = 0
-    ORDER BY m.created DESC`;
+    ORDER BY m.created ASC`;
   const [rows] = await pool.execute(query);
 
   const formattedRows = camelize(rows).map(row => {
     return {
-      messages: [{
+      message: {
         body: row.messageBody,
         id: row.messageId,
         created: row.messageCreated
-      }],
+      },
       sender: {
         username: row.sender
       },
@@ -82,7 +96,38 @@ async function readUnnotified() {
     };
   });
 
-  return formattedRows;
+  return collectUnique(formattedRows);
+}
+
+/**
+ * Given rows of messages in format { sender: { username }, receiver: { username }, message }
+ * collect the messages with the same sender a receiver to
+ * { sender, receiver, messages } i.e. (sender, receiver) pair is unique
+ * and their messages are collected to array 'messages'
+ */
+function collectUnique(formattedRows) {
+
+  // helper function, returns true if and only if the sender, receiver pair is the first occurence in the filtered array (therefore is unique after filtering)
+  function onlyUniqueThreadDirection({ sender, receiver }, index, self) {
+    // when the occurence is the first occurence, return true
+    return self.findIndex(input => sender.username === input.sender.username && receiver.username === input.receiver.username) === index;
+  }
+
+  const uniqueDirections = formattedRows
+    // filter only unique pair of sender, receiver
+    .filter(onlyUniqueThreadDirection)
+    // collect the messages from formatted rows
+    .map(({ sender, receiver }) => {
+
+      const messages = formattedRows.filter(formattedRow => {
+        return sender.username === formattedRow.sender.username
+          && receiver.username === formattedRow.receiver.username;
+      }).map(oneItem => oneItem.message);
+
+      return { sender, receiver, messages };
+    });
+
+  return uniqueDirections;
 }
 
 /**

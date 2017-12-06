@@ -12,10 +12,12 @@ const agentFactory = require('./agent'),
 
 describe('send messages', () => {
   let agent,
+      buddyReceiver,
       dbData,
       receiver,
       sandbox,
-      sender;
+      sender,
+      unverifiedReceiver;
 
   beforeEach(() => {
     sandbox = sinon.sandbox.create();
@@ -38,20 +40,43 @@ describe('send messages', () => {
 
   beforeEach(async () => {
     dbData = await db.fill({
-      users: 3,
-      verifiedUsers: [0, 1]
+      users: 4,
+      verifiedUsers: [0, 1, 3],
+      buddies: [0, 3],
+      active: [0, 3],
+      comers: [1, 2]
     });
 
-    [sender, receiver] = dbData.users;
+    [sender, receiver, unverifiedReceiver, buddyReceiver] = dbData.users;
   });
 
   describe('send: POST /messages', () => {
+    let defaultMessage;
+
+    beforeEach(() => {
+      defaultMessage = {
+        data: {
+          type: 'messages',
+          attributes: {
+            body: 'this is a message for you'
+          },
+          relationships: {
+            receiver: {
+              data: {
+                type: 'users',
+                id: receiver.username
+              }
+            }
+          }
+        }
+      };
+    });
 
     context('logged in as comer or active buddy', () => {
-
       beforeEach(() => {
         agent = agentFactory.logged(sender);
       });
+
 
       context('valid request', () => {
 
@@ -62,28 +87,13 @@ describe('send messages', () => {
 
           await agent
             .post('/messages')
-            .send({
-              data: {
-                type: 'messages',
-                attributes: {
-                  body: 'this is a message for you'
-                },
-                relationships: {
-                  to: {
-                    data: {
-                      type: 'users',
-                      id: receiver.username
-                    }
-                  }
-                }
-              }
-            })
+            .send(defaultMessage)
             .expect(201);
 
           const messagesAfter = await model.messages.read(sender.username, receiver.username);
           should(messagesAfter).Array().length(1);
 
-          // TODO check that message has body, sender, receiver, creation time, whether it was read or not
+          // check that message has body, sender, receiver, creation time, whether it was read or not
           should(messagesAfter[0]).match({
             sender: sender.username,
             receiver: receiver.username,
@@ -98,70 +108,35 @@ describe('send messages', () => {
           should(messagesBefore).Array().length(0);
 
           // send the first message from sender to receiver
+          const message0 = JSON.parse(JSON.stringify(defaultMessage));
+          message0.data.attributes.body = 'message0';
+
           await agent
             .post('/messages')
-            .send({
-              data: {
-                type: 'messages',
-                attributes: {
-                  body: 'message0'
-                },
-                relationships: {
-                  to: {
-                    data: {
-                      type: 'users',
-                      id: receiver.username
-                    }
-                  }
-                }
-              }
-            })
+            .send(message0)
             .expect(201);
 
           sandbox.clock.tick(1000);
 
           // send second message from sender to receiver
+          const message1 = JSON.parse(JSON.stringify(defaultMessage));
+          message1.data.attributes.body = 'message1';
+
           await agent
             .post('/messages')
-            .send({
-              data: {
-                type: 'messages',
-                attributes: {
-                  body: 'message1'
-                },
-                relationships: {
-                  to: {
-                    data: {
-                      type: 'users',
-                      id: receiver.username
-                    }
-                  }
-                }
-              }
-            })
+            .send(message1)
             .expect(201);
 
           sandbox.clock.tick(1000);
 
           // send a message in opposite direction ("receiver" and "sender" switch roles)
+          const message2 = JSON.parse(JSON.stringify(defaultMessage));
+          message2.data.attributes.body = 'message2';
+          message2.data.relationships.receiver.data.id = sender.username;
+
           await agentFactory.logged(receiver)
             .post('/messages')
-            .send({
-              data: {
-                type: 'messages',
-                attributes: {
-                  body: 'message2'
-                },
-                relationships: {
-                  to: {
-                    data: {
-                      type: 'users',
-                      id: sender.username
-                    }
-                  }
-                }
-              }
-            })
+            .send(message2)
             .expect(201);
 
           const messagesAfter = await model.messages.read(sender.username, receiver.username);
@@ -173,22 +148,7 @@ describe('send messages', () => {
           it('send notification email to receiver' , async () => {
             await agent
               .post('/messages')
-              .send({
-                data: {
-                  type: 'messages',
-                  attributes: {
-                    body: 'this is a message for you'
-                  },
-                  relationships: {
-                    to: {
-                      data: {
-                        type: 'users',
-                        id: receiver.username
-                      }
-                    }
-                  }
-                }
-              })
+              .send(defaultMessage)
               .expect(201);
 
             await notificationJobs.messages();
@@ -204,25 +164,10 @@ describe('send messages', () => {
             // TODO check link in the email
           });
 
-          it('send notification only once' , async () => {
+          it('send notification only once', async () => {
             await agent
               .post('/messages')
-              .send({
-                data: {
-                  type: 'messages',
-                  attributes: {
-                    body: 'this is a message for you'
-                  },
-                  relationships: {
-                    to: {
-                      data: {
-                        type: 'users',
-                        id: receiver.username
-                      }
-                    }
-                  }
-                }
-              })
+              .send(defaultMessage)
               .expect(201);
 
             await notificationJobs.messages();
@@ -231,26 +176,189 @@ describe('send messages', () => {
             sinon.assert.calledOnce(mailer.general);
           });
 
+          it('put multiple messages to a single notification', async () => {
+            await agent
+              .post('/messages')
+              .send(defaultMessage)
+              .expect(201);
+
+            sandbox.clock.tick(1000);
+
+            await agent
+              .post('/messages')
+              .send(defaultMessage)
+              .expect(201);
+
+            await notificationJobs.messages();
+
+            sinon.assert.calledOnce(mailer.general);
+          });
+
+          it('test multiple messages, multiple directions', async () => {
+
+            defaultMessage.data.attributes.body = 'older message';
+            await agent
+              .post('/messages')
+              .send(defaultMessage)
+              .expect(201);
+
+            sandbox.clock.tick(1000);
+
+            defaultMessage.data.attributes.body = 'newer message';
+            await agent
+              .post('/messages')
+              .send(defaultMessage)
+              .expect(201);
+
+            // send a message in opposite direction ("receiver" and "sender" switch roles)
+            const messageOpposite = JSON.parse(JSON.stringify(defaultMessage));
+            messageOpposite.data.attributes.body = 'message2';
+            messageOpposite.data.relationships.receiver.data.id = sender.username;
+            await agentFactory.logged(receiver)
+              .post('/messages')
+              .send(messageOpposite)
+              .expect(201);
+
+            await notificationJobs.messages();
+
+            sinon.assert.callCount(mailer.general, 2);
+          });
+
         });
 
       });
 
       context('invalid request', () => {
 
-        it('[invalid receiver username] 400');
-        it('[missing receiver] 400');
-        it('[nonexistent receiver] 404');
-        it('[unverified receiver] 404');
-        it('[message to self] 400');
-        it('[invalid message body] 400');
-        it('[missing message body] 400');
-        it('[additional properties] 400');
+        it('[invalid receiver username] 400', async () => {
+          const invalidReceiverMessage = JSON.parse(JSON.stringify(defaultMessage));
+          invalidReceiverMessage.data.relationships.receiver.data.id = 'inv!lid';
+
+          const response = await agent
+            .post('/messages')
+            .send(invalidReceiverMessage)
+            .expect(400);
+
+          should(response.body).match({ errors: [{
+            title: 'invalid receiver'
+          }] });
+        });
+
+        it('[missing receiver] 400', async () => {
+          const invalidReceiverMessage = JSON.parse(JSON.stringify(defaultMessage));
+          delete invalidReceiverMessage.data.relationships.receiver;
+
+          const response = await agent
+            .post('/messages')
+            .send(invalidReceiverMessage)
+            .expect(400);
+
+          should(response.body).match({ errors: [{
+            title: 'invalid properties',
+            detail: 'missing property receiver'
+          }] });
+        });
+
+        it('[nonexistent receiver] 404', async () => {
+          const nonexistentReceiverMessage = JSON.parse(JSON.stringify(defaultMessage));
+          nonexistentReceiverMessage.data.relationships.receiver.data.id = 'nonexistent';
+
+          await agent
+            .post('/messages')
+            .send(nonexistentReceiverMessage)
+            .expect(404);
+        });
+
+        it('[unverified receiver] 404', async () => {
+          const unverifiedReceiverMessage = JSON.parse(JSON.stringify(defaultMessage));
+          unverifiedReceiverMessage.data.relationships.receiver.data.id = unverifiedReceiver.username;
+
+          await agent
+            .post('/messages')
+            .send(unverifiedReceiverMessage)
+            .expect(404);
+        });
+
+        it('[message to self] 400', async () => {
+          const selfMessage = JSON.parse(JSON.stringify(defaultMessage));
+          selfMessage.data.relationships.receiver.data.id = sender.username;
+
+          const response = await agent
+            .post('/messages')
+            .send(selfMessage)
+            .expect(400);
+
+          should(response.body).match({ errors: [{
+            title: 'invalid'
+          }] });
+        });
+
+        it('[invalid message body] 400', async () => {
+          const invalidBodyMsg = JSON.parse(JSON.stringify(defaultMessage));
+          invalidBodyMsg.data.attributes.body = '  ';
+
+          const response = await agent
+            .post('/messages')
+            .send(invalidBodyMsg)
+            .expect(400);
+
+          should(response.body).match({ errors: [{
+            title: 'invalid body'
+          }] });
+        });
+
+        it('[missing message body] 400', async () => {
+          const noBodyMsg = JSON.parse(JSON.stringify(defaultMessage));
+          delete noBodyMsg.data.attributes.body;
+
+          const response = await agent
+            .post('/messages')
+            .send(noBodyMsg)
+            .expect(400);
+
+          should(response.body).match({ errors: [{
+            title: 'invalid properties',
+            detail: 'missing property body'
+          }] });
+        });
+
+        it('[additional properties] 400', async () => {
+          const additionalPropertiesMsg = JSON.parse(JSON.stringify(defaultMessage));
+          additionalPropertiesMsg.data.attributes.additional = 'property';
+
+          const response = await agent
+            .post('/messages')
+            .send(additionalPropertiesMsg)
+            .expect(400);
+
+          should(response.body).match({ errors: [{
+            title: 'invalid property',
+            detail: 'unexpected property additional'
+          }] });
+        });
+
+        it('[not between comer and active buddy] 404', async () => {
+          const buddyToBuddyMsg = JSON.parse(JSON.stringify(defaultMessage));
+          buddyToBuddyMsg.data.relationships.receiver.data.id = buddyReceiver.username;
+
+          await agent
+            .post('/messages')
+            .send(buddyToBuddyMsg)
+            .expect(404);
+        });
 
       });
     });
 
     context('not logged in', () => {
-      it('403');
+
+      it('403', async () => {
+        await agent
+          .post('/messages')
+          .send(defaultMessage)
+          .expect(403);
+      });
+
     });
   });
 

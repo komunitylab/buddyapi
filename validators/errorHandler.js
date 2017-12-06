@@ -13,7 +13,7 @@ module.exports = function (err, req, res, next) {
       if (e.hasOwnProperty('dataPath')) { // is this an ajv json-schema error?
         if (e.keyword === 'additionalProperties') { // invalid attributes are failing additionalProperties: false
           e.param = 'property';
-          e.msg = 'unexpected property';
+          e.msg = `unexpected property ${e.params.additionalProperty}`;
         } else if (e.keyword === 'required') { // missing attributes are missing fields from required: ['required', 'fields']
           e.param = 'properties';
           e.msg = `missing property ${e.params.missingProperty }`;
