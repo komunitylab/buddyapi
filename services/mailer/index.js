@@ -4,9 +4,9 @@ const path = require('path'),
       nodemailer = require('nodemailer'),
       EmailTemplate = require('email-templates').EmailTemplate,
       fs = require('fs-extra'),
-      hbs = require('handlebars');
-
-const config = require(path.resolve('./config'));
+      hbs = require('handlebars'),
+      sanitize = require(path.resolve('./services/text')),
+      config = require(path.resolve('./config'));
 
 // register handlebars partials and helpers
 (function () {
@@ -17,6 +17,7 @@ const config = require(path.resolve('./config'));
 
   // configurable partials
   const partialNames = [
+    'notify-messages',
     'verify-email'
   ];
 
@@ -45,7 +46,7 @@ async function sendMail(type, params, email, subject) {
   return await exports.general(toSend);
 }
 
-exports.general = async function ({ to, from='info@buddybrno.cz <info@buddybrno.cz>', subject, html, text }) {
+exports.general = async function general({ to, from='info@buddybrno.cz <info@buddybrno.cz>', subject, html, text }) {
   let transporter;
   try {
     transporter = nodemailer.createTransport(config.mailer);
@@ -67,7 +68,22 @@ exports.general = async function ({ to, from='info@buddybrno.cz <info@buddybrno.
   }
 };
 
-exports.verifyEmail = async function ({ email, url, username, code }) {
+exports.verifyEmail = async function verifyEmail({ email, url, username, code }) {
   const subject =  'Email verification for Buddy Brno';
   return await sendMail('verify-email', { url, username, code }, email, subject);
+};
+
+exports.notifyMessages = async function notifyMessages({ messages, sender, receiver }) {
+  const { email } = receiver;
+  const subject = `${sender.username} sent you a message on Buddy Brno`;
+  // TODO url
+  const url = `https://this.is.url/to/the-conversation-with/${sender.username}/in-the-app`;
+
+  // TODO sanitize
+  const sanitizedMessages = {
+    text: messages.map(({ body }) => sanitize.plainText(body)),
+    html: messages.map(({ body }) => sanitize.html(body))
+  };
+
+  return await sendMail('notify-messages', { sender, receiver, messages: sanitizedMessages, url, isMore: messages.length > 1 }, email, subject);
 };

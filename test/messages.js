@@ -7,7 +7,8 @@ const path = require('path'),
 const agentFactory = require('./agent'),
       db = require('./db'),
       mailer = require(path.resolve('./services/mailer')),
-      model = require(path.resolve('./model'));
+      model = require(path.resolve('./model')),
+      notificationJobs = require(path.resolve('./jobs/notifications'));
 
 describe('send messages', () => {
   let agent,
@@ -92,38 +93,6 @@ describe('send messages', () => {
           });
         });
 
-        it('send notification email to receiver'/* , async () => {
-          await agent
-            .post('/messages')
-            .send({
-              data: {
-                type: 'messages',
-                attributes: {
-                  body: 'this is a message for you'
-                },
-                relationships: {
-                  to: {
-                    data: {
-                      type: 'users',
-                      id: receiver.username
-                    }
-                  }
-                }
-              }
-            })
-            .expect(201);
-
-          sinon.assert.calledOnce(mailer.general);
-          const message = mailer.general.getCall(0).args[0];
-
-          should(message).containDeep({
-            to: `<${receiver.email}>`,
-            subject: `${sender.username} sent you a message on Buddy Brno`
-          });
-
-          // TODO check link in the email
-        }*/);
-
         it('send multiple messages', async () => {
           const messagesBefore = await model.messages.read(sender.username, receiver.username);
           should(messagesBefore).Array().length(0);
@@ -197,6 +166,71 @@ describe('send messages', () => {
 
           const messagesAfter = await model.messages.read(sender.username, receiver.username);
           should(messagesAfter).Array().length(3);
+        });
+
+        describe('email notification for receiver of the message', () => {
+
+          it('send notification email to receiver' , async () => {
+            await agent
+              .post('/messages')
+              .send({
+                data: {
+                  type: 'messages',
+                  attributes: {
+                    body: 'this is a message for you'
+                  },
+                  relationships: {
+                    to: {
+                      data: {
+                        type: 'users',
+                        id: receiver.username
+                      }
+                    }
+                  }
+                }
+              })
+              .expect(201);
+
+            await notificationJobs.messages();
+
+            sinon.assert.calledOnce(mailer.general);
+            const message = mailer.general.getCall(0).args[0];
+
+            should(message).containDeep({
+              to: `<${receiver.email}>`,
+              subject: `${sender.username} sent you a message on Buddy Brno`
+            });
+
+            // TODO check link in the email
+          });
+
+          it('send notification only once' , async () => {
+            await agent
+              .post('/messages')
+              .send({
+                data: {
+                  type: 'messages',
+                  attributes: {
+                    body: 'this is a message for you'
+                  },
+                  relationships: {
+                    to: {
+                      data: {
+                        type: 'users',
+                        id: receiver.username
+                      }
+                    }
+                  }
+                }
+              })
+              .expect(201);
+
+            await notificationJobs.messages();
+            await notificationJobs.messages();
+
+            sinon.assert.calledOnce(mailer.general);
+          });
+
         });
 
       });

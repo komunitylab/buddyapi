@@ -47,4 +47,57 @@ async function create(sender, receiver, body) {
   await pool.execute(query, params);
 }
 
-module.exports = { create, read };
+/**
+ * Find all messages which are not read and not notified
+ * Used for sending notification emails in a job
+ */
+async function readUnnotified() {
+  const query = `SELECT from_user.username AS sender,
+    to_user.username AS receiver,
+    to_user.email AS receiver_email,
+    m.body AS message_body,
+    m.id AS message_id,
+    m.created AS message_created
+    FROM message as m
+    INNER JOIN user AS from_user ON from_user.id = m.from_user_id
+    INNER JOIN user AS to_user ON to_user.id = m.to_user_id
+    WHERE is_read = 0 AND is_notified = 0
+    ORDER BY m.created DESC`;
+  const [rows] = await pool.execute(query);
+
+  const formattedRows = camelize(rows).map(row => {
+    return {
+      messages: [{
+        body: row.messageBody,
+        id: row.messageId,
+        created: row.messageCreated
+      }],
+      sender: {
+        username: row.sender
+      },
+      receiver: {
+        username: row.receiver,
+        email: row.receiverEmail
+      }
+    };
+  });
+
+  return formattedRows;
+}
+
+/**
+ * Provided an array of message ids, make all of them notified: true
+ * @param {integer[]} ids - list of ids of messages to mark notified: true
+ */
+async function updateNotified(ids) {
+
+  if (ids.length === 0) return;
+
+  const query = `UPDATE message
+    SET is_notified = 1
+    WHERE message.id IN (${Array(ids.length).fill('?').join(',')})`;
+  const params = ids;
+  await pool.execute(query, params);
+}
+
+module.exports = { create, read, readUnnotified, updateNotified };

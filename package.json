@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "ajv": "^5.5.0",
+    "autolinker": "^1.6.0",
     "basic-auth": "^2.0.0",
     "body-parser": "~1.18.2",
     "camelize": "^1.0.0",
@@ -20,11 +21,14 @@
     "express": "~4.15.5",
     "fs-extra": "^4.0.2",
     "handlebars": "^4.0.11",
+    "he": "^1.1.1",
     "jsonapi-serializer": "^3.5.5",
     "jsonwebtoken": "^8.1.0",
     "mysql2": "^1.5.1",
+    "node-cron": "^1.2.1",
     "nodemailer": "^4.4.0",
-    "prompt": "^1.0.0"
+    "prompt": "^1.0.0",
+    "sanitize-html": "^1.16.1"
   },
   "devDependencies": {
     "eslint": "^4.11.0",
