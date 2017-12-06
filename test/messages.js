@@ -143,6 +143,25 @@ describe('send messages', () => {
           should(messagesAfter).Array().length(3);
         });
 
+        it('trim and sanitize message body for database', async () => {
+
+          const msgSanitize = JSON.parse(JSON.stringify(defaultMessage));
+          msgSanitize.data.attributes.body = '  <script>ahoj</script> <a href="https://example.com" target="_blank">asdf</a>  ';
+
+          await agent
+            .post('/messages')
+            .send(msgSanitize)
+            .expect(201);
+
+          const messagesAfter = await model.messages.read(sender.username, receiver.username);
+          should(messagesAfter).Array().length(1);
+
+          // check that message body was sanitized and trimmed
+          should(messagesAfter[0]).match({
+            body: '<a href="https://example.com">asdf</a>',
+          });
+        });
+
         describe('email notification for receiver of the message', () => {
 
           it('send notification email to receiver' , async () => {

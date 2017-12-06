@@ -5,7 +5,8 @@ const account = require('./account'),
       authorize = require('./authorize'),
       go = require('./go'),
       messages = require('./messages'),
+      sanitize = require('./sanitize'),
       userLanguages = require('./user-languages'),
       users = require('./users');
 
-module.exports = { account, auth, authorize, go, messages, userLanguages, users };
+module.exports = { account, auth, authorize, go, messages, sanitize, userLanguages, users };

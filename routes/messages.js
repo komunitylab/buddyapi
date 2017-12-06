@@ -9,6 +9,6 @@ const controllers = require(path.resolve('./controllers')),
 const router = express.Router();
 
 router.route('/')
-  .post(controllers.authorize.onlyActiveBuddyOrComer, validators.messages.post, controllers.messages.post);
+  .post(controllers.authorize.onlyActiveBuddyOrComer, controllers.sanitize.html(['body']), validators.messages.post, controllers.messages.post);
 
 module.exports = router;
