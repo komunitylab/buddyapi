@@ -4,6 +4,26 @@ title: buddy brno REST
 version: dev
 mediaType: application/vnd.api+json
 
+/account:
+  patch:
+    description: Verify email. And more.
+
+/auth:
+  /token:
+    get:
+      description: Responds with a JWT token when authorized (with basic authorization).
+    /admin:
+      get:
+        description: Responds with a JWT admin token
+
+/messages:
+  post:
+    description: Sends a message from logged user to receiver. Send a notification to the receiver (job does it regularly).
+  get:
+    description: |
+      - ?filter[threads] show a list of 'last message of every conversation'
+      - ?filter[with]=username show a conversation with a single user
+
 /users:
   post:
     description: Create a new user wih unverified email. Verification message will be sent to the provided email.
@@ -27,3 +47,31 @@ mediaType: application/vnd.api+json
         description: Validation error
       409:
         description: Conflict, username must be unique
+  /{username}:
+    patch:
+      description: |
+        - admin can activate or desactivate buddy
+        - user can update her own availability
+    /languages:
+      post:
+        description: add a language to self
+      /{language}:
+        delete:
+          description: remove a language from self
+
+/comers:
+  get:
+    description: |
+      list verified and available comers to a buddy
+      - ?filter[gender]=male,female,other
+      - ?filter[age][min]=number
+      - ?filter[age][max]=number
+      - ?filter[language]=aa,bb,cc
+/buddies:
+  get:
+    description: |
+      list verified, available and active buddies to a comer
+      - ?filter[gender]=male,female,other
+      - ?filter[age][min]=number
+      - ?filter[age][max]=number
+      - ?filter[language]=aa,bb,cc
