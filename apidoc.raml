@@ -1,0 +1,29 @@
+#%RAML 1.0
+---
+title: buddy brno REST
+version: dev
+mediaType: application/vnd.api+json
+
+/users:
+  post:
+    description: Create a new user wih unverified email. Verification message will be sent to the provided email.
+    body:
+      example:
+        data:
+          type: users
+          attributes:
+            username: example
+            email: example@example.com
+            password: thisShouldBeStronger
+            role: buddy
+            givenName: Foo
+            familyName: Bar
+            birthday: 1500000000000
+            gender: female
+    responses:
+      201:
+        description: Success
+      400:
+        description: Validation error
+      409:
+        description: Conflict, username must be unique

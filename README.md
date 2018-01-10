@@ -39,3 +39,7 @@ npm start
 ```
 npm test
 ```
+
+## documentation
+
+[Documentation](apidoc.raml) is available [here](https://komunitylab.github.io/buddyapi/).
