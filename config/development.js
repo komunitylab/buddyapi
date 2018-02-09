@@ -3,8 +3,8 @@
 module.exports = {
   database: {
     host: 'localhost',
-    database: 'buddy_test',
-    user: 'buddy_test'
+    database: 'buddy_dev',
+    user: 'buddy_dev'
   },
   /**
    * Configuration for nodemailer

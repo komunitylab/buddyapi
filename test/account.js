@@ -31,7 +31,7 @@ describe('account', () => {
     let code;
 
     beforeEach(async () => {
-      code = await model.users.create({ username: 'test', email: 'test@example.com', role: '', givenName: '', familyName: '', gender: '', birthday: '', password: '' });
+      code = await model.users.create({ username: 'test', email: 'test@example.com', role: null, givenName: '', familyName: '', gender: null, birthday: null, password: '' });
     });
 
     context('valid data', () => {
@@ -85,7 +85,7 @@ describe('account', () => {
 
       it('duplicate email', async () => {
         // create unverified user with another code
-        const otherCode = await model.users.create({ username: 'other-test', email: 'test@example.com', role: '', givenName: '', familyName: '', gender: '', birthday: '', password: '' });
+        const otherCode = await model.users.create({ username: 'other-test', email: 'test@example.com', role: null, givenName: '', familyName: '', gender: null, birthday: null, password: '' });
 
         // first verification should pass
         await agent
